@@ -40,10 +40,10 @@ export const siteConfig: SiteConfig = {
 	featurePages: {
 		anime: false, // 番剧页面开关
 		diary: false, // 日记页面开关
-		friends: false, // 友链页面开关
+		friends: true, // 友链页面开关
 		projects: false, // 项目页面开关
 		skills: false, // 技能页面开关
-		timeline: false, // 时间线页面开关
+		timeline: true, // 时间线页面开关
 		albums: false, // 相册页面开关
 		devices: false, // 设备页面开关
 	},
@@ -218,20 +218,20 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"/assets/desktop-banner/1.webp",
-			"/assets/desktop-banner/2.webp",
-			"/assets/desktop-banner/3.webp",
-			"/assets/desktop-banner/4.webp",
-			"/assets/desktop-banner/5.webp",
-			"/assets/desktop-banner/6.webp",
+			"/my-blog/assets/images/banner01.jpg",
+			"/my-blog/assets/images/banner02.jpg",
+			"/my-blog/assets/images/banner03.png",
+			"/my-blog/assets/images/banner04.jpg",
+			"/my-blog/assets/images/banner05.jpg",
+			"/my-blog/assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
-			"/assets/mobile-banner/1.webp",
-			"/assets/mobile-banner/2.webp",
-			"/assets/mobile-banner/3.webp",
-			"/assets/mobile-banner/4.webp",
-			"/assets/mobile-banner/5.webp",
-			"/assets/mobile-banner/6.webp",
+			"/my-blog/assets/images/banner01.jpg",
+			"/my-blog/assets/images/banner02.jpg",
+			"/my-blog/assets/images/banner03.png",
+			"/my-blog/assets/images/banner04.jpg",
+			"/my-blog/assets/images/banner05.jpg",
+			"/my-blog/assets/images/banner06.jpg",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -320,6 +320,12 @@ export const navBarConfig: NavBarConfig = {
 			],
 		},
 		{
+      		name: "友链",
+      		url: "/friends/",  // 注意前后都有斜杠
+      		icon: "material-symbols:group",
+    	},
+
+		{
 			name: "Others",
 			url: "#",
 			icon: "material-symbols:more-horiz",
@@ -345,7 +351,7 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/01.jpg", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
+	avatar: "/assets/images/01.jpg", // 相对于 /src 目录。如果以 '/' 开头，则相对于 /public 目录
 	name: "Syurlow",
 	bio: "生如芥子 心藏须弥",
 	typewriter: {
@@ -422,7 +428,7 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 };
 
 export const commentConfig: CommentConfig = {
-	enable: false, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
+	enable: true, // 启用评论功能。当设置为 false 时，评论组件将不会显示在文章区域。
 	twikoo: {
 		envId: "https://twikoo.vercel.app",
 		lang: SITE_LANG,
@@ -435,7 +441,7 @@ export const shareConfig: ShareConfig = {
 
 export const announcementConfig: AnnouncementConfig = {
 	title: "", // 公告标题，填空使用i18n字符串Key.announcement
-	content: "ブログへようこそ！これはサンプルの告知です", // 公告内容
+	content: "欢迎来到咱的冰屋哦~", // 公告内容
 	closable: true, // 允许用户关闭公告
 	link: {
 		enable: true, // 启用链接
@@ -446,11 +452,11 @@ export const announcementConfig: AnnouncementConfig = {
 };
 
 export const musicPlayerConfig: MusicPlayerConfig = {
-	enable: false, // 启用音乐播放器功能
+	enable: true, // 启用音乐播放器功能
 	mode: "meting", // 音乐播放器模式，可选 "local" 或 "meting"
 	meting_api:
 		"https://www.bilibili.uno/api?server=:server&type=:type&id=:id&auth=:auth&r=:r", // Meting API 地址
-	id: "14164869977", // 歌单ID
+	id: "17697506733", // 歌单ID
 	server: "netease", // 音乐源服务器。有的meting的api源支持更多平台,一般来说,netease=网易云音乐, tencent=QQ音乐, kugou=酷狗音乐, xiami=虾米音乐, baidu=百度音乐
 	type: "playlist", // 播单类型
 };
@@ -618,7 +624,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 };
 
 export const sakuraConfig: SakuraConfig = {
-	enable: false, // 默认关闭樱花特效
+	enable: true, // 默认关闭樱花特效
 	sakuraNum: 21, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {
@@ -647,7 +653,7 @@ export const sakuraConfig: SakuraConfig = {
 // Pio 看板娘配置
 export const pioConfig: import("./types/config").PioConfig = {
 	enable: true, // 启用看板娘
-	models: ["/pio/models/pio/model.json"], // 默认模型路径
+	models: ["/my-blog/pio/models/pio/model.json"], // 默认模型路径
 	position: "left", // 模型位置
 	width: 280, // 默认宽度
 	height: 250, // 默认高度
