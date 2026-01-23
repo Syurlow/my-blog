@@ -1,19 +1,15 @@
 name: Deploy to GitHub Pages
 
 on:
-  # 监听 main 分支的推送
   push:
     branches: [ main ]
-  # 允许手动触发
   workflow_dispatch:
 
-# 权限设置：允许写入 Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# 并发处理：如果有新提交，取消旧的构建
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -25,23 +21,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 1. 先安装 pnpm (这是关键修复：必须最先安装)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 2. 再安装 Node.js (此时 pnpm 已经存在，可以启用缓存了)
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
+      # 3. 安装依赖
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 4. 构建网站
       - name: Build with Astro
         run: pnpm build
 
+      # 5. 上传构建产物
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
