@@ -24,8 +24,7 @@ jobs:
       # 1. 先安装 pnpm (这是关键修复：必须最先安装)
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
+
 
       # 2. 再安装 Node.js (此时 pnpm 已经存在，可以启用缓存了)
       - name: Install Node.js
