@@ -38,14 +38,14 @@ export const siteConfig: SiteConfig = {
 
 	// 特色页面开关配置（关闭未使用的页面有助于提升 SEO，关闭后请记得在 navbarConfig 中移除对应链接）
 	featurePages: {
-		anime: false, // 番剧页面开关
-		diary: false, // 日记页面开关
+		anime: true, // 番剧页面开关
+		diary: true, // 日记页面开关
 		friends: true, // 友链页面开关
-		projects: false, // 项目页面开关
-		skills: false, // 技能页面开关
+		projects: true, // 项目页面开关
+		skills: true, // 技能页面开关
 		timeline: true, // 时间线页面开关
-		albums: false, // 相册页面开关
-		devices: false, // 设备页面开关
+		albums: true, // 相册页面开关
+		devices: true, // 设备页面开关
 	},
 
 	// 顶栏标题配置
@@ -53,7 +53,7 @@ export const siteConfig: SiteConfig = {
 		// 显示模式："text-icon" 显示图标+文本，"logo" 仅显示Logo
 		mode: "logo",
 		// 顶栏标题文本
-		text: "MizukiUI",
+		text: "Syurlow",
 		// 顶栏标题图标路径，默认使用 public/assets/home/home.png
 		icon: "assets/home/home.png",
 		// 网站Logo图片路径
@@ -150,7 +150,7 @@ export const siteConfig: SiteConfig = {
 			title: "欢迎来到咱的小屋", // 主页横幅主标题
 
 			subtitle: [
-				"1+1=⑨",
+				"小萝莉们大家好~",
 				"baka~baka~🎶",
 				"琪露诺是最可爱的！",
 				"琪露诺是最厉害的！",
@@ -256,7 +256,7 @@ export const navBarConfig: NavBarConfig = {
 			children: [
 				{
 					name: "GitHub",
-					url: "https://github.com/CirnoQvQ",
+					url: "https://github.com/syurlow",
 					external: true,
 					icon: "fa6-brands:github",
 				},
@@ -298,7 +298,7 @@ export const navBarConfig: NavBarConfig = {
 					name: "Devices",
 					url: "devices/",
 					icon: "material-symbols:devices",
-					external: false,
+					external: true,
 				},
 			],
 		},
@@ -625,10 +625,10 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 
 export const sakuraConfig: SakuraConfig = {
 	enable: true, // 默认关闭樱花特效
-	sakuraNum: 21, // 樱花数量
+	sakuraNum: 60, // 樱花数量
 	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
 	size: {
-		min: 0.5, // 樱花最小尺寸倍数
+		min: 0.3, // 樱花最小尺寸倍数
 		max: 1.1, // 樱花最大尺寸倍数
 	},
 	opacity: {
@@ -637,12 +637,12 @@ export const sakuraConfig: SakuraConfig = {
 	},
 	speed: {
 		horizontal: {
-			min: -1.7, // 水平移动速度最小值
-			max: -1.2, // 水平移动速度最大值
+			min: 0.2, // 水平移动速度最小值
+			max: -0.2, // 水平移动速度最大值
 		},
 		vertical: {
-			min: 1.5, // 垂直移动速度最小值
-			max: 2.2, // 垂直移动速度最大值
+			min: 0.6, // 垂直移动速度最小值
+			max: 1.2, // 垂直移动速度最大值
 		},
 		rotation: 0.03, // 旋转速度
 		fadeSpeed: 0.03, // 消失速度，不应大于最小不透明度
@@ -660,7 +660,7 @@ export const pioConfig: import("./types/config").PioConfig = {
 	mode: "draggable", // 默认为可拖拽模式
 	hiddenOnMobile: true, // 默认在移动设备上隐藏
 	dialog: {
-		welcome: "Welcome to Mizuki Website!", // 欢迎词
+		welcome: "Welcome to syurlow Website!", // 欢迎词
 		touch: [
 			"What are you doing?",
 			"Stop touching me!",
