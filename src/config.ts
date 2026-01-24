@@ -93,7 +93,7 @@ export const siteConfig: SiteConfig = {
 	// 壁纸模式配置
 	wallpaperMode: {
 		// 默认壁纸模式：banner=顶部横幅，fullscreen=全屏壁纸，none=无壁纸
-		defaultMode: "banner",
+		defaultMode: "fullscreen",
 		// 整体布局方案切换按钮显示设置（默认："desktop"）
 		// "off" = 不显示
 		// "mobile" = 仅在移动端显示
@@ -114,12 +114,12 @@ export const siteConfig: SiteConfig = {
 				"/my-blog/assets/images/banner06.jpg",
 			], // 桌面横幅图片
 			mobile: [
-				"/assets/images/banner01.jpg",
-				"/assets/images/banner02.jpg",
-				"/assets/images/banner03.png",
-				"/assets/images/banner04.jpg",
-				"/assets/images/banner05.jpg",
-				"/assets/images/banner06.jpg",
+				"/my-blog/assets/images/banner01.jpg",
+				"/my-blog/assets/images/banner02.jpg",
+				"/my-blog/assets/images/banner03.png",
+				"/my-blog/assets/images/banner04.jpg",
+				"/my-blog/assets/images/banner05.jpg",
+				"/my-blog/assets/images/banner06.jpg",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -226,12 +226,12 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/my-blog/assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
-			"/assets/images/banner01.jpg",
-			"/assets/images/banner02.jpg",
-			"/assets/images/banner03.png",
-			"/assets/images/banner04.jpg",
-			"/assets/images/banner05.jpg",
-			"/assets/images/banner06.jpg",
+			"/my-blog/assets/images/banner01.jpg",
+			"/my-blog/assets/images/banner02.jpg",
+			"/my-blog/assets/images/banner03.png",
+			"/my-blog/assets/images/banner04.jpg",
+			"/my-blog/assets/images/banner05.jpg",
+			"/my-blog/assets/images/banner06.jpg",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
