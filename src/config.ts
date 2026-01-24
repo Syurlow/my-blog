@@ -297,12 +297,6 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 					icon: "fa6-brands:instagram",
 				},
-				{
-    				name: "QQ",
-    				icon: "fa6-brands:qq",
-    				// 尝试唤起资料卡/添加好友
-    				url: "mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1390875604&card_type=person&source=sharecard",
-				},
 			],
 		},
 		{
