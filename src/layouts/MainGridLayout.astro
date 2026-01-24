@@ -861,6 +861,22 @@ const transparentClass = shouldEnableTransparency
 
 <!-- 保留此元素以确保Swup正常工作 -->
 {(!siteConfig.toc.enable || isFloatTOC) && <div id="toc-container" class="hidden"></div>}
+
+<!-- 用户首次点击后自动播放音乐 -->
+<script is:inline>
+  document.addEventListener('click', function autoPlayMusic() {
+    // 尝试找到音乐播放器的 audio 元素
+    const audio = document.querySelector('audio');
+    if (audio && audio.paused) {
+      audio.play().catch(function(err) {
+        console.log('Auto play failed:', err);
+      });
+    }
+    // 只执行一次，然后移除监听
+    document.removeEventListener('click', autoPlayMusic);
+  }, { once: true });
+</script>
+
 </Layout>
 
 <style>
