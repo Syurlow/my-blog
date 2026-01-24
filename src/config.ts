@@ -106,17 +106,17 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"assets/images/banner01.jpg",
-				"assets/images/banner02.jpg",
-				"assets/images/banner03.png",
+				"images/banner01.jpg",
+				"images/banner02.jpg",
+				"images/banner03.png",
 				"assets/images/banner04.jpg",
 				"assets/images/banner05.jpg",
 				"assets/images/banner06.jpg",
 			], // 桌面横幅图片
 			mobile: [
-				"assets/images/banner01.jpg",
-				"assets/images/banner02.jpg",
-				"assets/images/banner03.png",
+				"images/banner01.jpg",
+				"images/banner02.jpg",
+				"images/banner03.png",
 				"assets/images/banner04.jpg",
 				"assets/images/banner05.jpg",
 				"assets/images/banner06.jpg",
@@ -218,17 +218,17 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"assets/images/banner01.jpg",
-			"assets/images/banner02.jpg",
-			"assets/images/banner03.png",
+			"images/banner01.jpg",
+			"images/banner02.jpg",
+			"images/banner03.png",
 			"assets/images/banner04.jpg",
 			"assets/images/banner05.jpg",
 			"assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
-			"assets/images/banner01.jpg",
-			"assets/images/banner02.jpg",
-			"assets/images/banner03.png",
+			"images/banner01.jpg",
+			"images/banner02.jpg",
+			"images/banner03.png",
 			"assets/images/banner04.jpg",
 			"assets/images/banner05.jpg",
 			"assets/images/banner06.jpg",
