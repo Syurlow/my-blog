@@ -106,20 +106,20 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"images/banner01.jpg",
-				"images/banner02.jpg",
-				"images/banner03.png",
-				"assets/images/banner04.jpg",
-				"assets/images/banner05.jpg",
-				"assets/images/banner06.jpg",
+				"/my-blog/assets/images/banner01.jpg",
+				"/my-blog/assets/images/banner02.jpg",
+				"/my-blog/assets/images/banner03.png",
+				"/my-blog/assets/images/banner04.jpg",
+				"/my-blog/assets/images/banner05.jpg",
+				"/my-blog/assets/images/banner06.jpg",
 			], // 桌面横幅图片
 			mobile: [
-				"images/banner01.jpg",
-				"images/banner02.jpg",
-				"images/banner03.png",
-				"assets/images/banner04.jpg",
-				"assets/images/banner05.jpg",
-				"assets/images/banner06.jpg",
+				"/my-blog/assets/images/banner01.jpg",
+				"/my-blog/assets/images/banner02.jpg",
+				"/my-blog/assets/images/banner03.png",
+				"/my-blog/assets/images/banner04.jpg",
+				"/my-blog/assets/images/banner05.jpg",
+				"/my-blog/assets/images/banner06.jpg",
 			], // 移动横幅图片
 		}, // 使用本地横幅图片
 
@@ -218,20 +218,20 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"images/banner01.jpg",
-			"images/banner02.jpg",
-			"images/banner03.png",
-			"assets/images/banner04.jpg",
-			"assets/images/banner05.jpg",
-			"assets/images/banner06.jpg",
+			"/my-blog/assets/images/banner01.jpg",
+			"/my-blog/assets/images/banner02.jpg",
+			"/my-blog/assets/images/banner03.png",
+			"/my-blog/assets/images/banner04.jpg",
+			"/my-blog/assets/images/banner05.jpg",
+			"/my-blog/assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
-			"images/banner01.jpg",
-			"images/banner02.jpg",
-			"images/banner03.png",
-			"assets/images/banner04.jpg",
-			"assets/images/banner05.jpg",
-			"assets/images/banner06.jpg",
+			"/my-blog/assets/images/banner01.jpg",
+			"/my-blog/assets/images/banner02.jpg",
+			"/my-blog/assets/images/banner03.png",
+			"/my-blog/assets/images/banner04.jpg",
+			"/my-blog/assets/images/banner05.jpg",
+			"/my-blog/assets/images/banner06.jpg",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
@@ -644,7 +644,7 @@ export const sakuraConfig: SakuraConfig = {
 			min: 0.6, // 垂直移动速度最小值
 			max: 1.2, // 垂直移动速度最大值
 		},
-		rotation: 0.01  , // 旋转速度
+		rotation: 0.001, // 旋转速度
 		fadeSpeed: 0.03, // 消失速度，不应大于最小不透明度
 	},
 	zIndex: 100, // 层级，确保樱花在合适的层级显示
