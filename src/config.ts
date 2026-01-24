@@ -321,7 +321,7 @@ export const navBarConfig: NavBarConfig = {
 				},
 				{
 					name: "Devices",
-					url: "/devices/",
+					url: "/my-blog/devices/",
 					icon: "material-symbols:devices",
 					external: true,
 				},
