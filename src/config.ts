@@ -322,7 +322,7 @@ export const navBarConfig: NavBarConfig = {
 				},
 				{
     				name: "MapPhotos", // 或者叫 "Map"
-    				url: "/my-blog/map/", // 记得加上你的 base path
+    				url: "/map/", // 记得加上你的 base path
     				icon: "material-symbols:map", // 换个地图图标
 				},
 
