@@ -106,12 +106,12 @@ export const siteConfig: SiteConfig = {
 		// 支持单张图片或图片数组，当数组长度 > 1 时自动启用轮播
 		src: {
 			desktop: [
-				"/assets/images/banner01.jpg",
-				"/assets/images/banner02.jpg",
-				"/assets/images/banner03.png",
-				"/assets/images/banner04.jpg",
-				"/assets/images/banner05.jpg",
-				"/assets/images/banner06.jpg",
+				"/my-blog/assets/images/banner01.jpg",
+				"/my-blog/assets/images/banner02.jpg",
+				"/my-blog/assets/images/banner03.png",
+				"/my-blog/assets/images/banner04.jpg",
+				"/my-blog/assets/images/banner05.jpg",
+				"/my-blog/assets/images/banner06.jpg",
 			], // 桌面横幅图片
 			mobile: [
 				"/assets/images/banner01.jpg",
@@ -226,12 +226,12 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 			"/my-blog/assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
-			"/my-blog/assets/images/banner01.jpg",
-			"/my-blog/assets/images/banner02.jpg",
-			"/my-blog/assets/images/banner03.png",
-			"/my-blog/assets/images/banner04.jpg",
-			"/my-blog/assets/images/banner05.jpg",
-			"/my-blog/assets/images/banner06.jpg",
+			"/assets/images/banner01.jpg",
+			"/assets/images/banner02.jpg",
+			"/assets/images/banner03.png",
+			"/assets/images/banner04.jpg",
+			"/assets/images/banner05.jpg",
+			"/assets/images/banner06.jpg",
 		], // 移动横幅图片
 	}, // 使用本地横幅图片
 	position: "center", // 壁纸位置，等同于 object-position
