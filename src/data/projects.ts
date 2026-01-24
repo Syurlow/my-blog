@@ -19,80 +19,32 @@ export interface Project {
 }
 
 export const projectsData: Project[] = [
+	// -----------------------------------------------------------------------
+	// 目前列表已清空。
+	// 当你需要添加项目时，请复制下方被注释的代码块，取消注释并修改内容。
+	// -----------------------------------------------------------------------
+
+	/*
 	{
-		id: "mizuki-blog",
-		title: "Mizuki Blog Theme",
-		description:
-			"Modern blog theme developed based on the Astro framework, supporting multilingual, dark mode, and responsive design features.",
-		image: "",
-		category: "web",
-		techStack: ["Astro", "TypeScript", "Tailwind CSS", "Svelte"],
-		status: "completed",
-		liveDemo: "https://blog.example.com",
-		sourceCode: "https://github.com/example/mizuki", // 更改为GitHub链接
-		visitUrl: "https://blog.example.com", // 添加前往项目链接
+		id: "project-id-1", // 唯一ID，不要重复
+		title: "项目标题",
+		description: "这里写项目的详细描述...",
+		image: "", // 项目封面图路径，例如 "/assets/projects/cover.jpg"
+		category: "web", // 类型可选: web, mobile, desktop, other
+		techStack: ["React", "TypeScript", "Tailwind CSS"], // 使用的技术栈
+		status: "completed", // 状态可选: completed, in-progress, planned
+		liveDemo: "https://demo.example.com", // 演示地址（可选）
+		sourceCode: "https://github.com/username/project", // 源码地址（可选）
+		visitUrl: "https://project.example.com", // 访问链接（可选）
 		startDate: "2024-01-01",
-		endDate: "2024-06-01",
-		featured: true,
-		tags: ["Blog", "Theme", "Open Source"],
+		endDate: "2024-02-01", // 如果还在进行中，这行可以删掉
+		featured: true, // 是否设为精选（会在首页显示）
+		tags: ["标签1", "标签2"],
 	},
-	{
-		id: "portfolio-website",
-		title: "Personal Portfolio",
-		description:
-			"Personal portfolio website showcasing project experience and technical skills.",
-		image: "",
-		category: "web",
-		techStack: ["React", "Next.js", "TypeScript", "Framer Motion"],
-		status: "completed",
-		liveDemo: "https://portfolio.example.com",
-		sourceCode: "https://github.com/example/portfolio",
-		visitUrl: "https://portfolio.example.com", // 添加前往项目链接
-		startDate: "2023-09-01",
-		endDate: "2023-12-01",
-		featured: true,
-		tags: ["Portfolio", "React", "Animation"],
-	},
-	{
-		id: "task-manager-app",
-		title: "Task Manager App",
-		description:
-			"Cross-platform task management application supporting team collaboration and project management.",
-		image: "",
-		category: "mobile",
-		techStack: ["React Native", "TypeScript", "Redux", "Firebase"],
-		status: "in-progress",
-		startDate: "2024-03-01",
-		tags: ["Mobile", "Productivity", "Team Collaboration"],
-	},
-	{
-		id: "data-visualization-tool",
-		title: "Data Visualization Tool",
-		description:
-			"Data visualization tool supporting multiple chart types and interactive analysis.",
-		image: "",
-		category: "web",
-		techStack: ["Vue.js", "D3.js", "TypeScript", "Node.js"],
-		status: "completed",
-		liveDemo: "https://dataviz.example.com",
-		visitUrl: "https://dataviz.example.com", // 添加前往项目链接
-		startDate: "2023-06-01",
-		endDate: "2023-11-01",
-		tags: ["Data Visualization", "Analytics", "Charts"],
-	},
-	{
-		id: "e-commerce-platform",
-		title: "E-commerce Platform",
-		description:
-			"Full-stack e-commerce platform including user management, product management, and order processing features.",
-		image: "",
-		category: "web",
-		techStack: ["Next.js", "Node.js", "PostgreSQL", "Stripe"],
-		status: "planned",
-		startDate: "2024-07-01",
-		tags: ["E-commerce", "Full Stack", "Payment Integration"],
-	},
+	*/
 ];
+
+// --- 以下统计函数保持不变，请勿删除 ---
 
 // Get project statistics
 export const getProjectStats = () => {

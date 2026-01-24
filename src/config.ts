@@ -272,6 +272,31 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 					icon: "mdi:git",
 				},
+				
+				{
+					name: "X",
+					url: "https://x.com/Qi_Cirno",
+					external: true,
+					icon: "fa6-brands:x-twitter",
+				},
+				{
+					name: "Steam",
+					url: "https://steamcommunity.com/id/Syurlow/",
+					external: true,
+					icon: "fa6-brands:steam",
+				},
+				{
+					name: "Discord",
+					url: "https://discord.com/users/947325989820723270",
+					external: true,
+					icon: "fa6-brands:discord",
+				},
+				{
+					name: "Instagram",
+					url: "https://www.instagram.com/qi_cirno/",
+					external: true,
+					icon: "fa6-brands:instagram",
+				},
 			],
 		},
 		{
@@ -296,7 +321,7 @@ export const navBarConfig: NavBarConfig = {
 				},
 				{
 					name: "Devices",
-					url: "devices/",
+					url: "/devices/",
 					icon: "material-symbols:devices",
 					external: true,
 				},
@@ -375,14 +400,34 @@ export const profileConfig: ProfileConfig = {
 			url: "https://github.com/Syurlow",
 		},
 		{
-			name: "Codeberg",
-			icon: "simple-icons:codeberg",
-			url: "https://codeberg.org",
+			name: "X",
+			icon: "fa6-brands:x-twitter",
+			url: "https://x.com/Qi_Cirno",
+		},
+		{
+			name: "Steam",
+			icon: "fa6-brands:steam",
+			url: "https://steamcommunity.com/id/Syurlow/",
 		},
 		{
 			name: "Discord",
 			icon: "fa6-brands:discord",
-			url: "https://discord.gg/ ",
+			url: "https://discord.com/users/947325989820723270",
+		},
+		{
+			name: "QQ",
+			icon: "fa6-brands:qq",
+			url: "tencent://message/?uin=1390875604&Site=&Menu=yes", // 尝试唤起QQ
+		},
+		{
+			name: "Instagram",
+			icon: "fa6-brands:instagram",
+			url: "https://www.instagram.com/qi_cirno/",
+		},
+		{
+			name: "Gitee",
+			icon: "mdi:git",
+			url: "https://gitee.com/Syurlow",
 		},
 	],
 };

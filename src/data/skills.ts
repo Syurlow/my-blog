@@ -27,7 +27,7 @@ export const skillsData: Skill[] = [
 		icon: "logos:python",
 		category: "backend",
 		level: "beginner", // 入门
-		experience: { years: 0, months: 6 },
+		experience: { years: 3, months: 9 },
 		color: "#3776AB",
 	},
 
@@ -40,7 +40,7 @@ export const skillsData: Skill[] = [
 		icon: "logos:matlab", // 或者 file-icons:matlab
 		category: "other",
 		level: "advanced", // 熟练
-		experience: { years: 2, months: 0 },
+		experience: { years: 3, months: 5 },
 		color: "#e16737",
 	},
 	{
@@ -51,7 +51,7 @@ export const skillsData: Skill[] = [
 		icon: "simple-icons:wolframmathematica",
 		category: "other",
 		level: "advanced", // 熟练
-		experience: { years: 2, months: 0 },
+		experience: { years: 1, months: 7 },
 		color: "#DD1100",
 	},
 	{
@@ -62,7 +62,7 @@ export const skillsData: Skill[] = [
 		icon: "logos:latex", // 或者 simple-icons:latex
 		category: "other",
 		level: "advanced", // 熟练
-		experience: { years: 2, months: 0 },
+		experience: { years: 3, months: 9 },
 		color: "#008080",
 	},
 	{
@@ -73,7 +73,7 @@ export const skillsData: Skill[] = [
 		icon: "logos:qgis",
 		category: "other",
 		level: "beginner", // 入门
-		experience: { years: 0, months: 3 },
+		experience: { years: 0, months: 2 },
 		color: "#589632",
 	},
 
@@ -110,7 +110,7 @@ export const skillsData: Skill[] = [
 		icon: "logos:visual-studio-code",
 		category: "tools",
 		level: "intermediate",
-		experience: { years: 1, months: 0 },
+		experience: { years: 0, months: 8 },
 		color: "#007ACC",
 	},
 	{
@@ -121,18 +121,18 @@ export const skillsData: Skill[] = [
 		icon: "logos:pycharm",
 		category: "tools",
 		level: "beginner",
-		experience: { years: 0, months: 6 },
+		experience: { years: 3, months: 4 },
 		color: "#21D789",
 	},
 	{
 		id: "wps",
 		name: "WPS Office",
 		description:
-			"日常文档处理工具，能够制作基础的文档、演示文稿和表格。",
+			"日常文档处理工具。",
 		icon: "simple-icons:wps", 
 		category: "tools",
-		level: "beginner", // 入门
-		experience: { years: 3, months: 0 },
+		level: "advanced", 
+		experience: { years: 12, months: 5 },
 		color: "#D22128",
 	},
 ];
