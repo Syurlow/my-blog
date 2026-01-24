@@ -1,17 +1,16 @@
 ---
-import MainLayout from '../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro';
 import MapAlbum from '../components/MapAlbum.astro';
 ---
 
-<MainLayout title="足迹地图" description="我的旅行足迹">
+<Layout title="足迹地图" description="我的旅行足迹">
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-8 text-center">我的足迹 🌍</h1>
     
-    <!-- 引入地图组件 -->
     <MapAlbum />
     
     <div class="mt-8 text-center text-gray-500 text-sm">
       <p>点击地图上的标记查看照片</p>
     </div>
   </div>
-</MainLayout>
+</Layout>

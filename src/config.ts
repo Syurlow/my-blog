@@ -24,7 +24,7 @@ const SITE_TIMEZONE = 8; //设置你的网站时区 from -12 to 12 default in UT
 export const siteConfig: SiteConfig = {
 	title: "Syurlow",
 	subtitle: "宇宙超级无敌大哥哥",
-	siteURL: "https://Syurlow.github.io/my-blog/", // 请替换为你的站点URL，以斜杠结尾
+	siteURL: "https://Syurlow.github.io/my-blog", // 请替换为你的站点URL，以斜杠结尾
 	siteStartDate: "2026-01-24", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
@@ -44,7 +44,7 @@ export const siteConfig: SiteConfig = {
 		projects: true, // 项目页面开关
 		skills: true, // 技能页面开关
 		timeline: true, // 时间线页面开关
-		albums: true, // 相册页面开关
+		albums: false, // 相册页面开关
 		devices: true, // 设备页面开关
 	},
 
@@ -315,18 +315,13 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:book",
 				},
 				{
-					name: "Gallery",
-					url: "/albums/",
-					icon: "material-symbols:photo-library",
-				},
-				{
 					name: "Devices",
 					url: "/my-blog/devices/",
 					icon: "material-symbols:devices",
 					external: true,
 				},
 				{
-    				name: "Map", // 或者叫 "Map"
+    				name: "MapPhotos", // 或者叫 "Map"
     				url: "/my-blog/map/", // 记得加上你的 base path
     				icon: "material-symbols:map", // 换个地图图标
 				},
