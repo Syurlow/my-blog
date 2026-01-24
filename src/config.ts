@@ -218,12 +218,12 @@ export const siteConfig: SiteConfig = {
 export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 	src: {
 		desktop: [
-			"/my-blog/assets/images/banner01.jpg",
-			"/my-blog/assets/images/banner02.jpg",
-			"/my-blog/assets/images/banner03.png",
-			"/my-blog/assets/images/banner04.jpg",
-			"/my-blog/assets/images/banner05.jpg",
-			"/my-blog/assets/images/banner06.jpg",
+			"/assets/images/banner01.jpg",
+			"/assets/images/banner02.jpg",
+			"/assets/images/banner03.png",
+			"/assets/images/banner04.jpg",
+			"/assets/images/banner05.jpg",
+			"/assets/images/banner06.jpg",
 		], // 桌面横幅图片
 		mobile: [
 			"/my-blog/assets/images/banner01.jpg",
