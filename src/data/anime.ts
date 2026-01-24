@@ -26,8 +26,8 @@ const localAnimeList: AnimeItem[] = [
 		episodes: "全52集",
 		year: "2007",
 		genre: ["搞笑", "恋爱", "日常", "后宫"],
-		studio: "SynergySP",
-		link: "https://bangumi.tv/subject/2336",
+		studio: "BANDAI CHANNEL",
+		link: "hhttps://www.b-ch.com/titles/2223/?ttl_c=2223",
 		progress: 52,
 		totalEpisodes: 52,
 		startDate: "2015-09", // 对应你说的 15年9月15号
@@ -42,7 +42,7 @@ const localAnimeList: AnimeItem[] = [
 		episodes: "连载中",
 		year: "1996",
 		genre: ["推理", "悬疑", "冒险"],
-		studio: "TMS Entertainment",
+		studio: "哔哩哔哩",
 		link: "https://www.bilibili.com/bangumi/play/ss33378?spm_id_from=333.337.0.0",
 		progress: 1100, // 估算值，因为还在连载
 		totalEpisodes: 1200, // 动态增长
@@ -59,7 +59,7 @@ const localAnimeList: AnimeItem[] = [
 		year: "2010",
 		genre: ["特摄", "动作", "奇幻"],
 		studio: "东映 (Toei)",
-		link: "https://bangumi.tv/subject/10572",
+		link: "https://www.nicovideo.jp/watch/so31354603",
 		progress: 48,
 		totalEpisodes: 48,
 		startDate: "2010-09", // 首播日期 2010-09-05
@@ -75,7 +75,7 @@ const localAnimeList: AnimeItem[] = [
 		year: "2000",
 		genre: ["冒险", "奇幻", "恋爱"],
 		studio: "Sunrise (日升)",
-		link: "https://bangumi.tv/subject/1609",
+		link: "https://www.bilibili.com/bangumi/play/ep289986?spm_id_from=333.337.0.0&from_spmid=666.25.episode.0",
 		progress: 167,
 		totalEpisodes: 167,
 		startDate: "2010-04", // 对应你说的 10年4月22日
@@ -91,7 +91,7 @@ const localAnimeList: AnimeItem[] = [
 		year: "2004",
 		genre: ["特摄", "科幻", "成人向"],
 		studio: "圆谷 (Tsuburaya)",
-		link: "https://bangumi.tv/subject/2493",
+		link: "https://www.bilibili.com/bangumi/play/ss38404?spm_id_from=333.337.0.0",
 		progress: 37,
 		totalEpisodes: 37,
 		startDate: "2006-05", // 对应你说的 06年5月3日

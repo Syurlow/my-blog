@@ -18,671 +18,126 @@ export interface Skill {
 }
 
 export const skillsData: Skill[] = [
-	// Frontend Skills
-	{
-		id: "javascript",
-		name: "JavaScript",
-		description:
-			"Modern JavaScript development, including ES6+ syntax, asynchronous programming, and modular development.",
-		icon: "logos:javascript",
-		category: "frontend",
-		level: "advanced",
-		experience: { years: 3, months: 6 },
-		projects: [
-			"mizuki-blog",
-			"portfolio-website",
-			"data-visualization-tool",
-		],
-		color: "#F7DF1E",
-	},
-	{
-		id: "typescript",
-		name: "TypeScript",
-		description:
-			"A type-safe superset of JavaScript that enhances code quality and development efficiency.",
-		icon: "logos:typescript-icon",
-		category: "frontend",
-		level: "advanced",
-		experience: { years: 2, months: 8 },
-		projects: ["mizuki-blog", "portfolio-website", "task-manager-app"],
-		color: "#3178C6",
-	},
-	{
-		id: "react",
-		name: "React",
-		description:
-			"A JavaScript library for building user interfaces, including Hooks, Context, and state management.",
-		icon: "logos:react",
-		category: "frontend",
-		level: "advanced",
-		experience: { years: 2, months: 10 },
-		projects: ["portfolio-website", "task-manager-app"],
-		color: "#61DAFB",
-	},
-	{
-		id: "vue",
-		name: "Vue.js",
-		description:
-			"A progressive JavaScript framework that is easy to learn and use, suitable for rapid development.",
-		icon: "logos:vue",
-		category: "frontend",
-		level: "intermediate",
-		experience: { years: 1, months: 8 },
-		projects: ["data-visualization-tool"],
-		color: "#4FC08D",
-	},
-	{
-		id: "angular",
-		name: "Angular",
-		description:
-			"An enterprise-level frontend framework developed by Google, a complete single-page application solution.",
-		icon: "logos:angular-icon",
-		category: "frontend",
-		level: "beginner",
-		experience: { years: 0, months: 9 },
-		projects: ["enterprise-dashboard"],
-		color: "#DD0031",
-	},
-	{
-		id: "nextjs",
-		name: "Next.js",
-		description:
-			"A production-level React framework supporting SSR, SSG, and full-stack development.",
-		icon: "logos:nextjs-icon",
-		category: "frontend",
-		level: "intermediate",
-		experience: { years: 1, months: 4 },
-		projects: ["e-commerce-frontend", "blog-platform"],
-		color: "#616161", // 更改为深灰色，避免纯黑色
-	},
-	{
-		id: "nuxtjs",
-		name: "Nuxt.js",
-		description:
-			"An intuitive Vue.js framework supporting server-side rendering and static site generation.",
-		icon: "logos:nuxt-icon",
-		category: "frontend",
-		level: "beginner",
-		experience: { years: 0, months: 6 },
-		projects: ["vue-ssr-app"],
-		color: "#00DC82",
-	},
-	{
-		id: "astro",
-		name: "Astro",
-		description:
-			"A modern static site generator supporting multi-framework integration and excellent performance.",
-		icon: "logos:astro-icon",
-		category: "frontend",
-		level: "advanced",
-		experience: { years: 1, months: 2 },
-		projects: ["mizuki-blog"],
-		color: "#FF5D01",
-	},
-	{
-		id: "tailwindcss",
-		name: "Tailwind CSS",
-		description:
-			"A utility-first CSS framework for rapidly building modern user interfaces.",
-		icon: "logos:tailwindcss-icon",
-		category: "frontend",
-		level: "advanced",
-		experience: { years: 2, months: 0 },
-		projects: ["mizuki-blog", "portfolio-website"],
-		color: "#06B6D4",
-	},
-	{
-		id: "sass",
-		name: "Sass/SCSS",
-		description:
-			"A CSS preprocessor providing advanced features like variables, nesting, and mixins.",
-		icon: "logos:sass",
-		category: "frontend",
-		level: "intermediate",
-		experience: { years: 2, months: 3 },
-		projects: ["legacy-website", "component-library"],
-		color: "#CF649A",
-	},
-	{
-		id: "webpack",
-		name: "Webpack",
-		description:
-			"A static module bundler for modern JavaScript applications.",
-		icon: "logos:webpack",
-		category: "frontend",
-		level: "intermediate",
-		experience: { years: 1, months: 10 },
-		projects: ["custom-build-tool", "spa-application"],
-		color: "#8DD6F9",
-	},
-	{
-		id: "vite",
-		name: "Vite",
-		description:
-			"Next-generation frontend build tool with fast cold starts and hot updates.",
-		icon: "logos:vitejs",
-		category: "frontend",
-		level: "intermediate",
-		experience: { years: 1, months: 2 },
-		projects: ["vue-project", "react-project"],
-		color: "#646CFF",
-	},
-
-	// Backend Skills
-	{
-		id: "nodejs",
-		name: "Node.js",
-		description:
-			"A JavaScript runtime based on Chrome V8 engine, used for server-side development.",
-		icon: "logos:nodejs-icon",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 2, months: 3 },
-		projects: ["data-visualization-tool", "e-commerce-platform"],
-		color: "#339933",
-	},
+	// --- 编程语言 ---
 	{
 		id: "python",
 		name: "Python",
 		description:
-			"A general-purpose programming language suitable for web development, data analysis, machine learning, and more.",
+			"作为入门语言学习，主要用于数据处理或简单的脚本编写。",
 		icon: "logos:python",
 		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 10 },
+		level: "beginner", // 入门
+		experience: { years: 0, months: 6 },
 		color: "#3776AB",
 	},
+
+	// --- 学术与数学专业工具 (归类为 Other) ---
 	{
-		id: "java",
-		name: "Java",
+		id: "matlab",
+		name: "MATLAB",
 		description:
-			"A mainstream programming language for enterprise application development, cross-platform and object-oriented.",
-		icon: "logos:java",
-		category: "backend",
-		level: "intermediate",
+			"数学专业必备工具，熟练进行矩阵运算、数值分析及算法实现。",
+		icon: "logos:matlab", // 或者 file-icons:matlab
+		category: "other",
+		level: "advanced", // 熟练
 		experience: { years: 2, months: 0 },
-		projects: ["enterprise-system", "microservices-api"],
-		color: "#ED8B00",
+		color: "#e16737",
 	},
 	{
-		id: "csharp",
-		name: "C#",
+		id: "mathematica",
+		name: "Mathematica",
 		description:
-			"A modern object-oriented programming language developed by Microsoft, suitable for the .NET ecosystem.",
-		icon: "devicon:csharp",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 6 },
-		projects: ["desktop-application", "web-api"],
-		color: "#239120",
+			"熟练掌握符号计算、数学建模及复杂函数的图形可视化。",
+		icon: "simple-icons:wolframmathematica",
+		category: "other",
+		level: "advanced", // 熟练
+		experience: { years: 2, months: 0 },
+		color: "#DD1100",
 	},
 	{
-		id: "go",
-		name: "Go",
+		id: "latex",
+		name: "LaTeX",
 		description:
-			"An efficient programming language developed by Google, suitable for cloud-native and microservices development.",
-		icon: "logos:go",
-		category: "backend",
-		level: "beginner",
-		experience: { years: 0, months: 8 },
-		projects: ["microservice-demo"],
-		color: "#00ADD8",
+			"经常使用，能够熟练进行学术论文排版、复杂数学公式编辑。",
+		icon: "logos:latex", // 或者 simple-icons:latex
+		category: "other",
+		level: "advanced", // 熟练
+		experience: { years: 2, months: 0 },
+		color: "#008080",
 	},
 	{
-		id: "rust",
-		name: "Rust",
+		id: "qgis",
+		name: "QGIS",
 		description:
-			"A systems programming language focusing on safety, speed, and concurrency, with no garbage collector.",
-		icon: "logos:rust",
-		category: "backend",
-		level: "beginner",
+			"刚入门地理信息系统，能够进行基础的地图查看和简单空间数据处理。",
+		icon: "logos:qgis",
+		category: "other",
+		level: "beginner", // 入门
+		experience: { years: 0, months: 3 },
+		color: "#589632",
+	},
+
+	// --- 设计与多媒体 (归类为 Other) ---
+	{
+		id: "photoshop",
+		name: "Photoshop",
+		description:
+			"能够进行基础的图像处理、修图及简单的平面设计。",
+		icon: "logos:adobe-photoshop",
+		category: "other",
+		level: "beginner", // 入门
 		experience: { years: 0, months: 6 },
-		projects: ["system-tool", "performance-critical-app"],
-		color: "#CE422B",
+		color: "#31A8FF",
 	},
 	{
-		id: "cpp",
-		name: "C++",
+		id: "aftereffects",
+		name: "After Effects",
 		description:
-			"A high-performance systems programming language widely used in game development, system software, and embedded development.",
-		icon: "logos:c-plusplus",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 4 },
-		projects: ["game-engine", "system-optimization"],
-		color: "#00599C",
-	},
-	{
-		id: "c",
-		name: "C",
-		description:
-			"A low-level systems programming language, the foundation for operating systems and embedded systems development.",
-		icon: "logos:c",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 2 },
-		projects: ["embedded-system", "kernel-module"],
-		color: "#A8B9CC",
-	},
-	{
-		id: "kotlin",
-		name: "Kotlin",
-		description:
-			"A modern programming language developed by JetBrains, fully compatible with Java, the preferred choice for Android development.",
-		icon: "logos:kotlin-icon",
-		category: "backend",
-		level: "beginner",
-		experience: { years: 0, months: 8 },
-		projects: ["android-app", "kotlin-backend"],
-		color: "#7F52FF",
-	},
-	{
-		id: "swift",
-		name: "Swift",
-		description:
-			"A modern programming language developed by Apple for iOS, macOS, watchOS, and tvOS development.",
-		icon: "logos:swift",
-		category: "backend",
-		level: "beginner",
-		experience: { years: 0, months: 6 },
-		projects: ["ios-app", "macos-tool"],
-		color: "#FA7343",
-	},
-	{
-		id: "ruby",
-		name: "Ruby",
-		description:
-			"A dynamic, open-source programming language focusing on simplicity and productivity, the foundation of the Rails framework.",
-		icon: "logos:ruby",
-		category: "backend",
-		level: "beginner",
+			"了解基础的视频后期合成与特效制作流程。",
+		icon: "logos:adobe-after-effects",
+		category: "other",
+		level: "beginner", // 入门
 		experience: { years: 0, months: 4 },
-		projects: ["web-prototype"],
-		color: "#CC342D",
-	},
-	{
-		id: "php",
-		name: "PHP",
-		description:
-			"A widely-used server-side scripting language, particularly suitable for web development.",
-		icon: "logos:php",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 6 },
-		projects: ["cms-system", "e-commerce-backend"],
-		color: "#777BB4",
-	},
-	{
-		id: "express",
-		name: "Express.js",
-		description: "A fast, minimalist Node.js web application framework.",
-		icon: "simple-icons:express",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 8 },
-		projects: ["data-visualization-tool"],
-		color: "#616161", // 更改为深灰色，避免纯黑色
-	},
-	{
-		id: "spring",
-		name: "Spring Boot",
-		description:
-			"The most popular enterprise application development framework in the Java ecosystem.",
-		icon: "logos:spring-icon",
-		category: "backend",
-		level: "intermediate",
-		experience: { years: 1, months: 4 },
-		projects: ["enterprise-system", "rest-api"],
-		color: "#6DB33F",
-	},
-	{
-		id: "django",
-		name: "Django",
-		description:
-			"A high-level Python web framework with rapid development and clean, pragmatic design.",
-		icon: "logos:django-icon",
-		category: "backend",
-		level: "beginner",
-		experience: { years: 0, months: 6 },
-		projects: ["blog-backend"],
-		color: "#092E20",
+		color: "#9999FF",
 	},
 
-	// Database Skills
-	{
-		id: "mysql",
-		name: "MySQL",
-		description:
-			"The world's most popular open-source relational database management system, widely used in web applications.",
-		icon: "logos:mysql-icon",
-		category: "database",
-		level: "advanced",
-		experience: { years: 2, months: 6 },
-		projects: ["e-commerce-platform", "blog-system"],
-		color: "#4479A1",
-	},
-	{
-		id: "postgresql",
-		name: "PostgreSQL",
-		description:
-			"A powerful open-source relational database management system.",
-		icon: "logos:postgresql",
-		category: "database",
-		level: "intermediate",
-		experience: { years: 1, months: 5 },
-		projects: ["e-commerce-platform"],
-		color: "#336791",
-	},
-	{
-		id: "redis",
-		name: "Redis",
-		description:
-			"A high-performance in-memory data structure store, used as a database, cache, and message broker.",
-		icon: "logos:redis",
-		category: "database",
-		level: "intermediate",
-		experience: { years: 1, months: 3 },
-		projects: ["e-commerce-platform", "real-time-chat"],
-		color: "#DC382D",
-	},
-	{
-		id: "mongodb",
-		name: "MongoDB",
-		description:
-			"A document-oriented NoSQL database with a flexible data model.",
-		icon: "logos:mongodb-icon",
-		category: "database",
-		level: "intermediate",
-		experience: { years: 1, months: 2 },
-		color: "#47A248",
-	},
-	{
-		id: "sqlite",
-		name: "SQLite",
-		description:
-			"A lightweight embedded relational database, suitable for mobile applications and small projects.",
-		icon: "simple-icons:sqlite",
-		category: "database",
-		level: "intermediate",
-		experience: { years: 1, months: 8 },
-		projects: ["mobile-app", "desktop-tool"],
-		color: "#003B57",
-	},
-	{
-		id: "firebase",
-		name: "Firebase",
-		description:
-			"Google's mobile and web application development platform providing real-time database and authentication services.",
-		icon: "simple-icons:firebase",
-		category: "database",
-		level: "intermediate",
-		experience: { years: 0, months: 10 },
-		projects: ["task-manager-app"],
-		color: "#FFCA28",
-	},
-
-	// Tools
-	{
-		id: "git",
-		name: "Git",
-		description:
-			"A distributed version control system, an essential tool for code management and team collaboration.",
-		icon: "logos:git-icon",
-		category: "tools",
-		level: "advanced",
-		experience: { years: 3, months: 0 },
-		color: "#F05032",
-	},
+	// --- 开发工具与办公软件 (归类为 Tools) ---
 	{
 		id: "vscode",
 		name: "VS Code",
 		description:
-			"A lightweight but powerful code editor with a rich plugin ecosystem.",
+			"日常使用的轻量级代码编辑器，配合插件编写 Python 或 LaTeX。",
 		icon: "logos:visual-studio-code",
 		category: "tools",
-		level: "expert",
-		experience: { years: 3, months: 6 },
-		color: "#007ACC",
-	},
-	{
-		id: "webstorm",
-		name: "WebStorm",
-		description:
-			"A professional JavaScript and web development IDE developed by JetBrains with intelligent code assistance.",
-		icon: "logos:webstorm",
-		category: "tools",
-		level: "advanced",
-		experience: { years: 2, months: 0 },
-		projects: ["react-project", "vue-project"],
-		color: "#00CDD7",
-	},
-	{
-		id: "intellij",
-		name: "IntelliJ IDEA",
-		description:
-			"JetBrains flagship IDE, the preferred tool for Java development with powerful intelligent coding assistance.",
-		icon: "logos:intellij-idea",
-		category: "tools",
 		level: "intermediate",
-		experience: { years: 1, months: 8 },
-		projects: ["java-enterprise", "spring-boot-app"],
-		color: "#616161", // 更改为深灰色，避免纯黑色
+		experience: { years: 1, months: 0 },
+		color: "#007ACC",
 	},
 	{
 		id: "pycharm",
 		name: "PyCharm",
 		description:
-			"A professional Python IDE by JetBrains providing intelligent code analysis and debugging features.",
+			"JetBrains 出品的 Python IDE，用于管理较复杂的 Python 项目。",
 		icon: "logos:pycharm",
 		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 4 },
-		projects: ["python-web-app", "data-analysis"],
+		level: "beginner",
+		experience: { years: 0, months: 6 },
 		color: "#21D789",
 	},
 	{
-		id: "rider",
-		name: "Rider",
+		id: "wps",
+		name: "WPS Office",
 		description:
-			"A cross-platform .NET IDE by JetBrains supporting development in C#, VB.NET, F#, and other languages.",
-		icon: "logos:rider",
+			"日常文档处理工具，能够制作基础的文档、演示文稿和表格。",
+		icon: "simple-icons:wps", 
 		category: "tools",
-		level: "beginner",
-		experience: { years: 0, months: 8 },
-		projects: ["dotnet-api", "desktop-app"],
-		color: "#616161", // 更改为深灰色，避免纯黑色
-	},
-	{
-		id: "goland",
-		name: "GoLand",
-		description:
-			"A professional Go language IDE by JetBrains providing intelligent coding assistance and debugging tools.",
-		icon: "logos:goland",
-		category: "tools",
-		level: "beginner",
-		experience: { years: 0, months: 6 },
-		projects: ["go-microservice"],
-		color: "#3D7BF7",
-	},
-	{
-		id: "docker",
-		name: "Docker",
-		description:
-			"A containerization platform that simplifies application deployment and environment management.",
-		icon: "logos:docker-icon",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 0 },
-		color: "#2496ED",
-	},
-	{
-		id: "kubernetes",
-		name: "Kubernetes",
-		description:
-			"A container orchestration platform for automating deployment, scaling, and management of containerized applications.",
-		icon: "logos:kubernetes",
-		category: "tools",
-		level: "beginner",
-		experience: { years: 0, months: 4 },
-		projects: ["microservices-deployment"],
-		color: "#326CE5",
-	},
-	{
-		id: "nginx",
-		name: "Nginx",
-		description: "A high-performance web server and reverse proxy server.",
-		icon: "logos:nginx",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 2 },
-		projects: ["web-server-config", "load-balancer"],
-		color: "#009639",
-	},
-	{
-		id: "apache",
-		name: "Apache HTTP Server",
-		description:
-			"The world's most popular web server software, a stable and reliable HTTP server.",
-		icon: "logos:apache",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 6 },
-		projects: ["traditional-web-server", "php-hosting"],
+		level: "beginner", // 入门
+		experience: { years: 3, months: 0 },
 		color: "#D22128",
 	},
-	{
-		id: "openresty",
-		name: "OpenResty",
-		description:
-			"A high-performance web platform based on Nginx and LuaJIT, supporting dynamic web application development.",
-		icon: "simple-icons:nginx",
-		category: "tools",
-		level: "beginner",
-		experience: { years: 0, months: 8 },
-		projects: ["api-gateway", "dynamic-routing"],
-		color: "#00A693",
-	},
-	{
-		id: "tomcat",
-		name: "Apache Tomcat",
-		description:
-			"A Java Servlet container and web server, the standard deployment environment for Java web applications.",
-		icon: "logos:tomcat",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 4 },
-		projects: ["java-web-app", "servlet-container"],
-		color: "#F8DC75",
-	},
-	{
-		id: "aws",
-		name: "AWS",
-		description:
-			"Amazon's cloud platform providing comprehensive cloud computing solutions.",
-		icon: "logos:aws",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 0 },
-		projects: ["cloud-deployment", "serverless-app"],
-		color: "#FF9900",
-	},
-	{
-		id: "linux",
-		name: "Linux",
-		description:
-			"An open-source operating system, the preferred choice for server deployment and development environments.",
-		icon: "logos:linux-tux",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 2, months: 0 },
-		projects: ["server-management", "shell-scripting"],
-		color: "#FCC624",
-	},
-	{
-		id: "postman",
-		name: "Postman",
-		description:
-			"An API development and testing tool that simplifies API design, testing, and documentation.",
-		icon: "logos:postman-icon",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 8 },
-		projects: ["api-testing", "api-documentation"],
-		color: "#FF6C37",
-	},
-	{
-		id: "figma",
-		name: "Figma",
-		description:
-			"A collaborative interface design tool for UI/UX design and prototyping.",
-		icon: "logos:figma",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 1, months: 6 },
-		color: "#F24E1E",
-	},
-	{
-		id: "photoshop",
-		name: "Photoshop",
-		description: "Professional image editing and design software.",
-		icon: "logos:adobe-photoshop",
-		category: "tools",
-		level: "intermediate",
-		experience: { years: 2, months: 6 },
-		projects: ["ui-design", "image-processing"],
-		color: "#31A8FF",
-	},
-
-	// Other Skills
-	{
-		id: "graphql",
-		name: "GraphQL",
-		description:
-			"An API query language and runtime providing a more efficient, powerful, and flexible way to fetch data.",
-		icon: "logos:graphql",
-		category: "other",
-		level: "beginner",
-		experience: { years: 0, months: 6 },
-		projects: ["modern-api"],
-		color: "#E10098",
-	},
-	{
-		id: "elasticsearch",
-		name: "Elasticsearch",
-		description:
-			"A distributed search and analytics engine used for full-text search and data analysis.",
-		icon: "logos:elasticsearch",
-		category: "other",
-		level: "beginner",
-		experience: { years: 0, months: 4 },
-		projects: ["search-system"],
-		color: "#005571",
-	},
-	{
-		id: "jest",
-		name: "Jest",
-		description:
-			"A JavaScript testing framework focused on simplicity and ease of use.",
-		icon: "logos:jest",
-		category: "other",
-		level: "intermediate",
-		experience: { years: 1, months: 2 },
-		projects: ["unit-testing", "integration-testing"],
-		color: "#C21325",
-	},
-	{
-		id: "cypress",
-		name: "Cypress",
-		description:
-			"A modern end-to-end testing framework for web applications.",
-		icon: "logos:cypress-icon",
-		category: "other",
-		level: "beginner",
-		experience: { years: 0, months: 8 },
-		projects: ["e2e-testing"],
-		color: "#17202C",
-	},
 ];
+
+// --- 以下统计函数保持不变 ---
 
 // Get skill statistics
 export const getSkillStats = () => {

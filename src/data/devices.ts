@@ -16,24 +16,24 @@ export type DeviceCategory = {
 };
 
 export const devicesData: DeviceCategory = {
-	OnePlus: [
+	Apple: [
 		{
-			name: "OnePlus 13T",
-			image: "/images/device/oneplus13t.png",
-			specs: "Gray / 16G + 1TB",
+			name: "iPhone 12 Pro Max",
+			image: "/my-blog/assets/devices/iphone12pm.png", // 请确保图片已放入对应位置
+			specs: "Pacific Blue / A14 Bionic / 6.7-inch Super Retina XDR",
 			description:
-				"Flagship performance, Hasselblad imaging, 80W SuperVOOC.",
-			link: "https://www.oneplus.com/cn/13t",
+				"Pro camera system, LiDAR Scanner, and the largest display ever on an iPhone (at launch).",
+			link: "https://support.apple.com/kb/SP832?locale=zh_CN",
 		},
 	],
-	Router: [
+	Lenovo: [
 		{
-			name: "GL-MT3000",
-			image: "/images/device/mt3000.png",
-			specs: "1000Mbps / 2.5G",
+			name: "Legion R9000K 2021",
+			image: "/my-blog/assets/devices/r9000k.png", // 请确保图片已放入对应位置
+			specs: "R9-5900HX / RTX 3080 (16G) / 32G RAM / 1TB SSD",
 			description:
-				"Portable WiFi 6 router suitable for business trips and home use.",
-			link: "https://www.gl-inet.cn/products/gl-mt3000/",
+				"Top-tier gaming laptop with Vapor Chamber cooling, 165W TGP GPU, and 2.5K 165Hz screen.",
+			link: "https://item.lenovo.com.cn/product/1013465.html",
 		},
 	],
 };
