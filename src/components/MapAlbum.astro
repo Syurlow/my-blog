@@ -1,7 +1,6 @@
 ---
 import { mapPhotos } from '../data/mapPhotos';
 
-// 将数据序列化为 JSON，传递给客户端脚本
 const photosJson = JSON.stringify(mapPhotos);
 ---
 
@@ -11,20 +10,62 @@ const photosJson = JSON.stringify(mapPhotos);
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-<!-- 将数据传递给客户端 -->
+<!-- 照片数据 -->
 <script id="map-photos-data" type="application/json" set:html={photosJson}></script>
 
 <script>
+  // WGS84 转 GCJ-02 坐标转换函数（Apple Maps 坐标转高德坐标）
+  function wgs84ToGcj02(lng: number, lat: number): [number, number] {
+    const PI = Math.PI;
+    const a = 6378245.0; // 长半轴
+    const ee = 0.00669342162296594323; // 偏心率平方
+
+    // 判断是否在中国境外
+    function outOfChina(lng: number, lat: number): boolean {
+      return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+    }
+
+    function transformLat(x: number, y: number): number {
+      let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+      ret += (160.0 * Math.sin(y / 12.0 * PI) + 320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+      return ret;
+    }
+
+    function transformLng(x: number, y: number): number {
+      let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+      ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+      ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+      return ret;
+    }
+
+    // 如果在国外，不转换
+    if (outOfChina(lng, lat)) {
+      return [lng, lat];
+    }
+
+    let dLat = transformLat(lng - 105.0, lat - 35.0);
+    let dLng = transformLng(lng - 105.0, lat - 35.0);
+    const radLat = lat / 180.0 * PI;
+    let magic = Math.sin(radLat);
+    magic = 1 - ee * magic * magic;
+    const sqrtMagic = Math.sqrt(magic);
+    dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * PI);
+    dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * PI);
+    
+    return [lng + dLng, lat + dLat];
+  }
+
   function initMap() {
     const mapContainer = document.getElementById('map-album');
     if (!mapContainer) return;
     
-    // 防止重复初始化
     if ((mapContainer as any)._leaflet_id) {
       return;
     }
 
-    // 读取照片数据
     const dataScript = document.getElementById('map-photos-data');
     if (!dataScript) return;
     
@@ -43,27 +84,33 @@ const photosJson = JSON.stringify(mapPhotos);
       return;
     }
 
-    // 动态加载 Leaflet JS
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.onload = () => {
       const L = (window as any).L;
       
-      // 设置地图中心点
-      const center: [number, number] = photos.length > 0 
-        ? [photos[0].lat, photos[0].lng] 
-        : [35.0, 105.0]; // 默认中国中心
+      // 转换第一个点的坐标作为中心点
+      let center: [number, number] = [35.0, 105.0];
+      if (photos.length > 0) {
+        const converted = wgs84ToGcj02(photos[0].lng, photos[0].lat);
+        center = [converted[1], converted[0]]; // Leaflet 用 [lat, lng]
+      }
         
-      const map = L.map('map-album').setView(center, 4);
+      const map = L.map('map-album').setView(center, 5);
 
-      // 添加地图图层
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      // 使用高德地图瓦片（国内访问快，不需要翻墙）
+      L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+        subdomains: ['1', '2', '3', '4'],
+        attribution: '&copy; 高德地图',
+        maxZoom: 18
       }).addTo(map);
 
-      // 添加所有标记
+      // 添加标记（坐标自动转换）
       photos.forEach(photo => {
-        const marker = L.marker([photo.lat, photo.lng]).addTo(map);
+        // 将 WGS84 坐标转换为 GCJ-02
+        const [gcjLng, gcjLat] = wgs84ToGcj02(photo.lng, photo.lat);
+        
+        const marker = L.marker([gcjLat, gcjLng]).addTo(map);
         
         const popupContent = `
           <div style="text-align: center; min-width: 180px;">
@@ -82,14 +129,12 @@ const photosJson = JSON.stringify(mapPhotos);
     document.head.appendChild(script);
   }
 
-  // 页面加载时初始化
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMap);
   } else {
     initMap();
   }
   
-  // 支持 Astro View Transitions
   document.addEventListener('astro:page-load', initMap);
 </script>
 
