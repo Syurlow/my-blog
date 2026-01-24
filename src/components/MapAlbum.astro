@@ -1,0 +1,84 @@
+---
+import 'leaflet/dist/leaflet.css';
+import { mapPhotos } from '../data/mapPhotos';
+---
+
+<!-- 地图容器 -->
+<div id="map-album" class="w-full h-[600px] rounded-xl shadow-lg z-0"></div>
+
+<script>
+  // 仅在客户端导入 Leaflet，因为地图无法在服务器端渲染
+  import L from 'leaflet';
+  import { mapPhotos } from '../data/mapPhotos';
+
+  // 修复 Leaflet 在构建工具中默认图标丢失的问题
+  import iconMarker from 'leaflet/dist/images/marker-icon.png';
+  import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
+  import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+  const DefaultIcon = L.icon({
+    iconUrl: iconMarker.src,
+    iconRetinaUrl: iconRetina.src,
+    shadowUrl: iconShadow.src,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  L.Marker.prototype.options.icon = DefaultIcon;
+
+  // 初始化地图函数
+  function initMap() {
+    const mapContainer = document.getElementById('map-album');
+    if (!mapContainer) return;
+
+    // 1. 创建地图实例，设置默认中心点和缩放级别
+    // 这里默认设置为第一个照片的位置，如果没有照片则设为北京
+    const center: L.LatLngExpression = mapPhotos.length > 0 
+      ? [mapPhotos[0].lat, mapPhotos[0].lng] 
+      : [39.9042, 116.4074];
+      
+    const map = L.map('map-album').setView(center, 4);
+
+    // 2. 添加地图图层 (使用 OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // 3. 遍历数据添加大头针 (Marker)
+    mapPhotos.forEach(photo => {
+      const marker = L.marker([photo.lat, photo.lng]).addTo(map);
+
+      // 构建弹出窗口的内容 (HTML)
+      const popupContent = `
+        <div class="text-center min-w-[200px]">
+          <h3 class="font-bold text-lg mb-2 text-gray-800">${photo.title}</h3>
+          <img src="${photo.imageUrl}" alt="${photo.title}" class="w-full h-32 object-cover rounded-md mb-2" style="max-width: 200px; display: block; margin: 0 auto;">
+          <p class="text-sm text-gray-600">${photo.description || ''}</p>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+    });
+  }
+
+  // 页面加载完成后初始化
+  // 考虑到 Astro 的 View Transitions，可能需要监听特定事件
+  document.addEventListener('astro:page-load', initMap);
+  // 如果没有开启 View Transitions，直接运行:
+  initMap();
+
+</script>
+
+<style>
+  /* 强制覆盖 Leaflet 的 z-index，防止遮挡导航栏 */
+  #map-album {
+    z-index: 1; 
+  }
+  /* 调整 Popup 样式 */
+  :global(.leaflet-popup-content-wrapper) {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+</style>

@@ -325,6 +325,12 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:devices",
 					external: true,
 				},
+				{
+    				name: "Map", // 或者叫 "Map"
+    				url: "/my-blog/map/", // 记得加上你的 base path
+    				icon: "material-symbols:map", // 换个地图图标
+				},
+
 			],
 		},
 		{
@@ -344,11 +350,6 @@ export const navBarConfig: NavBarConfig = {
 				},
 			],
 		},
-		{
-      		name: "友链",
-      		url: "/friends/",  // 注意前后都有斜杠
-      		icon: "material-symbols:group",
-    	},
 
 		{
 			name: "Others",
