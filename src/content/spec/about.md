@@ -1,10 +1,8 @@
 ---
 title: 关于我
 description: 生如芥子，心藏须弥
-layout: MainLayout
 ---
 
-import Profile from '../../components/Profile.astro'
 
 ## 👋 小萝莉们你们好呀！这里是宇宙超级无敌大哥哥——Syurlow
 

@@ -23,7 +23,7 @@ export const friendsData: FriendItem[] = [
 	{
 		id: 2,
 		title: "空岚",
-		imgurl: "/my-blog/assets/images/kl.png",
+		imgurl: "https://konglan0.github.io/Mistn/_astro/avatar.iJhMBiMC_iGJJ0.webp",
 		desc: "是一个大笨蛋",
 		siteurl: "https://konglan0.github.io/Mistn/",
 		tags: ["Friend"],
