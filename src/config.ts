@@ -424,11 +424,6 @@ export const profileConfig: ProfileConfig = {
 			icon: "fa6-brands:instagram",
 			url: "https://www.instagram.com/qi_cirno/",
 		},
-		{
-			name: "Gitee",
-			icon: "mdi:git",
-			url: "https://gitee.com/Syurlow",
-		},
 	],
 };
 
