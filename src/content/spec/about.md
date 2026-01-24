@@ -1,7 +1,7 @@
 ---
 title: 关于我
 description: 生如芥子，心藏须弥
-layout: ../../layouts/MainLayout.astro
+layout: MainLayout
 ---
 
 import Profile from '../../components/Profile.astro'
