@@ -56,4 +56,12 @@ export const mapPhotos: MapPhoto[] = [
     lat: 30.513135,
     lng: 114.431140,
   },
+  {
+    id: "7",
+    title: "冰之妖精√",
+    description: "零下十几度，还着下雪www",
+    imageUrl: "/my-blog/assets/images/baka.jpg",
+    lat: 44.883383,
+    lng: 82.090393,
+  },
 ];
