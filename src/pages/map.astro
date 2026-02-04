@@ -1,14 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapAlbum from '../components/MapAlbum.astro';
-import { flightRoutes } from '../data/flightRoutes';
+import { flightsMeta, getFlightStats } from '../data/flightRoutes';
 import { mapPhotos } from '../data/mapPhotos';
 
 // 统计信息
-const flightCount = flightRoutes.length;
+const stats = getFlightStats();
+const flightCount = stats.totalFlights;
 const photoCount = mapPhotos.length;
-const airlines = new Set(flightRoutes.map(f => f.flightNumber.substring(0, 2)));
-const airlineCount = airlines.size;
+const airlineCount = stats.totalAirlines;
 ---
 
 <Layout title="足迹地图" description="我的旅行足迹和飞行航线">

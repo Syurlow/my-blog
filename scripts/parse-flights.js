@@ -16,7 +16,8 @@ const __dirname = path.dirname(__filename);
 
 // 配置
 const AIR_DATA_DIR = path.join(__dirname, '../public/MapData/AIR');
-const OUTPUT_FILE = path.join(__dirname, '../src/data/flightRoutes.ts');
+const OUTPUT_JSON = path.join(__dirname, '../public/data/flights.json');
+const OUTPUT_TS = path.join(__dirname, '../src/data/flightRoutes.ts');
 
 // 航空公司信息
 const airlines = {
@@ -214,81 +215,79 @@ async function main() {
     return 0;
   });
   
-  // 生成 TypeScript 文件
-  const output = `// 航班路线数据
+  // 确保输出目录存在
+  const outputDir = path.dirname(OUTPUT_JSON);
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  // 生成 JSON 文件（供客户端动态加载）
+  fs.writeFileSync(OUTPUT_JSON, JSON.stringify(flights), 'utf-8');
+  console.log(`JSON 文件: ${OUTPUT_JSON} (${(fs.statSync(OUTPUT_JSON).size / 1024 / 1024).toFixed(2)} MB)`);
+
+  // 生成精简的 TypeScript 文件（只包含统计信息，不包含轨迹点）
+  const flightsMeta = flights.map(f => ({
+    id: f.id,
+    flightNumber: f.flightNumber,
+    date: f.date,
+    route: f.route,
+    departure: f.departure,
+    arrival: f.arrival,
+    aircraftReg: f.aircraftReg,
+    aircraftType: f.aircraftType,
+    color: f.color,
+    pointsCount: f.points.length,
+  }));
+
+  const tsOutput = `// 航班路线元数据（不含轨迹点）
 // 此文件由 scripts/parse-flights.js 自动生成
 // 生成时间: ${new Date().toISOString()}
-// 请勿手动编辑
+// 完整轨迹数据位于 /public/data/flights.json
 
-import type { FlightInfo } from '../types/flight';
-
-export const flightRoutes: FlightInfo[] = ${JSON.stringify(flights, null, 2)};
-
-// 获取所有航班
-export function getAllFlights(): FlightInfo[] {
-  return flightRoutes;
+export interface FlightMeta {
+  id: string;
+  flightNumber: string;
+  date: string;
+  route: string;
+  departure: string;
+  arrival: string;
+  aircraftReg: string;
+  aircraftType: string;
+  color: string;
+  pointsCount: number;
 }
+
+export const flightsMeta: FlightMeta[] = ${JSON.stringify(flightsMeta, null, 2)};
 
 // 获取航班统计
 export function getFlightStats() {
-  const flights = flightRoutes;
-  const airlines = new Set(flights.map(f => f.flightNumber.substring(0, 2)));
+  const airlines = new Set(flightsMeta.map(f => f.flightNumber.substring(0, 2)));
   const airports = new Set<string>();
   
-  flights.forEach(f => {
+  flightsMeta.forEach(f => {
     if (f.departure) airports.add(f.departure);
     if (f.arrival) airports.add(f.arrival);
   });
   
   return {
-    totalFlights: flights.length,
+    totalFlights: flightsMeta.length,
     totalAirlines: airlines.size,
     totalAirports: airports.size,
     airlines: Array.from(airlines),
     airports: Array.from(airports),
   };
 }
-
-// 按航空公司分组
-export function getFlightsByAirline(): Record<string, FlightInfo[]> {
-  const grouped: Record<string, FlightInfo[]> = {};
-  
-  flightRoutes.forEach(flight => {
-    const airline = flight.flightNumber.substring(0, 2);
-    if (!grouped[airline]) {
-      grouped[airline] = [];
-    }
-    grouped[airline].push(flight);
-  });
-  
-  return grouped;
-}
-
-// 按年份分组
-export function getFlightsByYear(): Record<string, FlightInfo[]> {
-  const grouped: Record<string, FlightInfo[]> = {};
-  
-  flightRoutes.forEach(flight => {
-    const year = '20' + flight.date.split('.')[0];
-    if (!grouped[year]) {
-      grouped[year] = [];
-    }
-    grouped[year].push(flight);
-  });
-  
-  return grouped;
-}
 `;
   
-  fs.writeFileSync(OUTPUT_FILE, output, 'utf-8');
+  fs.writeFileSync(OUTPUT_TS, tsOutput, 'utf-8');
   
   console.log('\n========== 解析完成 ==========');
   console.log(`总计: ${flights.length} 个航班`);
-  console.log(`输出: ${OUTPUT_FILE}`);
+  console.log(`TS 文件: ${OUTPUT_TS}`);
   
   // 统计信息
-  const airlines = new Set(flights.map(f => f.flightNumber.substring(0, 2)));
-  console.log(`航空公司: ${Array.from(airlines).join(', ')}`);
+  const airlineSet = new Set(flights.map(f => f.flightNumber.substring(0, 2)));
+  console.log(`航空公司: ${Array.from(airlineSet).join(', ')}`);
 }
 
 main().catch(console.error);
