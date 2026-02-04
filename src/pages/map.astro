@@ -1,21 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapAlbum from '../components/MapAlbum.astro';
+import { flightRoutes } from '../data/flightRoutes';
+import { mapPhotos } from '../data/mapPhotos';
+
+// 统计信息
+const flightCount = flightRoutes.length;
+const photoCount = mapPhotos.length;
+const airlines = new Set(flightRoutes.map(f => f.flightNumber.substring(0, 2)));
+const airlineCount = airlines.size;
 ---
 
-<Layout title="足迹地图" description="我的旅行足迹">
-  <div class="container mx-auto px-4 py-8">
+<Layout title="足迹地图" description="我的旅行足迹和飞行航线">
+  <div class="map-page-container">
     
-    <!-- 顶部导航栏：返回按钮 + 标题 -->
-    <div class="flex items-center justify-between mb-8">
+    <!-- 顶部导航栏 -->
+    <div class="map-header">
       <!-- 返回主页按钮 -->
-      <a href="/my-blog/" 
-         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg 
-                bg-[var(--card-bg)] hover:bg-[var(--btn-hover-bg)] 
-                text-[var(--text-color)] 
-                transition-all duration-300 
-                shadow-md hover:shadow-lg">
-        <!-- 箭头图标 (SVG) -->
+      <a href="/my-blog/" class="back-btn">
         <svg xmlns="http://www.w3.org/2000/svg" 
              width="20" height="20" 
              viewBox="0 0 24 24" 
@@ -26,22 +28,253 @@ import MapAlbum from '../components/MapAlbum.astro';
              stroke-linejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
-        <span>返回主页</span>
+        <span>返回</span>
       </a>
       
       <!-- 页面标题 -->
-      <h1 class="text-2xl md:text-3xl font-bold">我的足迹 🌍</h1>
+      <div class="title-section">
+        <h1 class="page-title">我的足迹 🌍</h1>
+        <p class="page-subtitle">记录每一次出行的轨迹</p>
+      </div>
       
-      <!-- 占位元素，保持标题居中 -->
-      <div class="w-[100px]"></div>
+      <!-- 统计卡片 -->
+      <div class="stats-cards">
+        <div class="stat-card">
+          <span class="stat-icon">✈️</span>
+          <div class="stat-content">
+            <span class="stat-value">{flightCount}</span>
+            <span class="stat-label">航班</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">📷</span>
+          <div class="stat-content">
+            <span class="stat-value">{photoCount}</span>
+            <span class="stat-label">照片</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🏢</span>
+          <div class="stat-content">
+            <span class="stat-value">{airlineCount}</span>
+            <span class="stat-label">航司</span>
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- 地图组件 -->
-    <MapAlbum />
+    <div class="map-wrapper">
+      <MapAlbum />
+    </div>
     
-    <!-- 底部提示 -->
-    <div class="mt-8 text-center text-gray-500 text-sm">
-      <p>点击地图上的标记查看照片</p>
+    <!-- 底部图例 -->
+    <div class="map-legend">
+      <div class="legend-item">
+        <span class="legend-icon photo-icon">📷</span>
+        <span>照片位置</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon">🛫</span>
+        <span>起飞机场</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon">🛬</span>
+        <span>降落机场</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line"></div>
+        <span>航线轨迹</span>
+      </div>
     </div>
   </div>
 </Layout>
+
+<style>
+  .map-page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  .map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--card-bg, #fff);
+    color: var(--text-color, #333);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .back-btn:hover {
+    background: var(--btn-hover-bg, #f3f4f6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .title-section {
+    text-align: center;
+    flex: 1;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color, #333);
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted, #666);
+    margin-top: 4px;
+  }
+
+  .stats-cards {
+    display: flex;
+    gap: 12px;
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--card-bg, #fff);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .stat-icon {
+    font-size: 1.25rem;
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .stat-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-color, #333);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted, #666);
+  }
+
+  .map-wrapper {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .map-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 12px 20px;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+    color: var(--text-muted, #666);
+  }
+
+  .legend-icon {
+    font-size: 1rem;
+  }
+
+  .legend-icon.photo-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50% 50% 50% 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transform: rotate(-45deg);
+  }
+
+  .legend-icon.photo-icon::after {
+    content: '📷';
+    transform: rotate(45deg);
+    font-size: 10px;
+  }
+
+  .legend-line {
+    width: 30px;
+    height: 3px;
+    background: linear-gradient(90deg, #004B87, #E31837, #FF6600);
+    border-radius: 2px;
+  }
+
+  /* 响应式布局 */
+  @media (max-width: 768px) {
+    .map-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .back-btn {
+      width: fit-content;
+    }
+
+    .title-section {
+      order: -1;
+    }
+
+    .stats-cards {
+      justify-content: center;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+    }
+
+    .map-legend {
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .map-page-container {
+      padding: 16px 12px;
+    }
+
+    .stat-card {
+      padding: 8px 12px;
+    }
+
+    .stats-cards {
+      gap: 8px;
+    }
+  }
+</style>

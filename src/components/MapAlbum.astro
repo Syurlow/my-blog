@@ -1,19 +1,80 @@
 ---
 import { mapPhotos } from '../data/mapPhotos';
+import { flightRoutes } from '../data/flightRoutes';
+import { getAirlineInfo } from '../types/flight';
 
 const photosJson = JSON.stringify(mapPhotos);
+const flightsJson = JSON.stringify(flightRoutes);
 ---
+
+<!-- 控制面板 -->
+<div class="map-controls">
+  <div class="control-group">
+    <label class="control-label">
+      <input type="checkbox" id="show-photos" checked />
+      <span class="control-icon">📷</span>
+      <span>照片</span>
+    </label>
+    <label class="control-label">
+      <input type="checkbox" id="show-flights" checked />
+      <span class="control-icon">✈️</span>
+      <span>航线</span>
+    </label>
+  </div>
+  <div class="stats-info" id="stats-info">
+    <span id="photo-count">0 张照片</span>
+    <span class="divider">|</span>
+    <span id="flight-count">0 条航线</span>
+  </div>
+</div>
 
 <!-- 地图容器 -->
 <div id="map-album" style="width: 100%; height: 600px; border-radius: 12px; z-index: 1;"></div>
+
+<!-- 航班信息弹窗 -->
+<div id="flight-info-panel" class="flight-info-panel hidden">
+  <button id="close-flight-panel" class="close-btn">×</button>
+  <div id="flight-info-content"></div>
+</div>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <!-- 照片数据 -->
 <script id="map-photos-data" type="application/json" set:html={photosJson}></script>
+<!-- 航班数据 -->
+<script id="map-flights-data" type="application/json" set:html={flightsJson}></script>
 
 <script>
+  // 航空公司信息
+  const airlines: Record<string, { name: string; color: string }> = {
+    'CA': { name: '中国国际航空', color: '#E31837' },
+    'CZ': { name: '中国南方航空', color: '#004B87' },
+    'MU': { name: '中国东方航空', color: '#003366' },
+    '3U': { name: '四川航空', color: '#FF6600' },
+    'HU': { name: '海南航空', color: '#C41230' },
+    'ZH': { name: '深圳航空', color: '#00A0E9' },
+    'FM': { name: '上海航空', color: '#E60012' },
+    'SC': { name: '山东航空', color: '#0066B3' },
+    'EU': { name: '成都航空', color: '#00A651' },
+    'GS': { name: '天津航空', color: '#E4002B' },
+    'JD': { name: '首都航空', color: '#FF0000' },
+    'TV': { name: '西藏航空', color: '#B71C1C' },
+    'PN': { name: '西部航空', color: '#4CAF50' },
+    'BK': { name: '奥凯航空', color: '#FF5722' },
+    'HO': { name: '吉祥航空', color: '#FF6B00' },
+    '9C': { name: '春秋航空', color: '#00AA00' },
+    'KN': { name: '联合航空', color: '#003087' },
+    'G5': { name: '华夏航空', color: '#FF4500' },
+    'AQ': { name: '九元航空', color: '#FF1493' },
+    'DR': { name: '瑞丽航空', color: '#8B0000' },
+  };
+
+  function getAirlineInfo(flightNumber: string): { name: string; color: string } {
+    const prefix = flightNumber.substring(0, 2).toUpperCase();
+    return airlines[prefix] || { name: '未知航空', color: '#888888' };
+  }
+
   // WGS84 转 GCJ-02 坐标转换函数（Apple Maps 坐标转高德坐标）
   function wgs84ToGcj02(lng: number, lat: number): [number, number] {
     const PI = Math.PI;
@@ -58,6 +119,42 @@ const photosJson = JSON.stringify(mapPhotos);
     return [lng + dLng, lat + dLat];
   }
 
+    // 全局变量
+  let map: any = null;
+  let photoMarkers: any[] = [];
+  let flightLayers: any[] = [];
+  let showPhotos = true;
+  let showFlights = true;
+
+  interface Photo {
+    title: string;
+    description?: string;
+    imageUrl: string;
+    lat: number;
+    lng: number;
+  }
+
+  interface FlightPoint {
+    lng: number;
+    lat: number;
+    altitude: number;
+    heading: number;
+    timestamp: string;
+  }
+
+  interface Flight {
+    id: string;
+    flightNumber: string;
+    date: string;
+    route: string;
+    departure: string;
+    arrival: string;
+    aircraftReg: string;
+    aircraftType: string;
+    points: FlightPoint[];
+    color: string;
+  }
+
   function initMap() {
     const mapContainer = document.getElementById('map-album');
     if (!mapContainer) return;
@@ -66,51 +163,61 @@ const photosJson = JSON.stringify(mapPhotos);
       return;
     }
 
-    const dataScript = document.getElementById('map-photos-data');
-    if (!dataScript) return;
+    // 解析数据
+    const photosScript = document.getElementById('map-photos-data');
+    const flightsScript = document.getElementById('map-flights-data');
     
-    let photos: Array<{
-      title: string;
-      description?: string;
-      imageUrl: string;
-      lat: number;
-      lng: number;
-    }> = [];
+    let photos: Photo[] = [];
+    let flights: Flight[] = [];
     
     try {
-      photos = JSON.parse(dataScript.textContent || '[]');
+      photos = JSON.parse(photosScript?.textContent || '[]');
+      flights = JSON.parse(flightsScript?.textContent || '[]');
     } catch (e) {
-      console.error('Failed to parse photo data:', e);
-      return;
+      console.error('Failed to parse data:', e);
     }
+
+    // 更新统计信息
+    const photoCountEl = document.getElementById('photo-count');
+    const flightCountEl = document.getElementById('flight-count');
+    if (photoCountEl) photoCountEl.textContent = `${photos.length} 张照片`;
+    if (flightCountEl) flightCountEl.textContent = `${flights.length} 条航线`;
 
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.onload = () => {
       const L = (window as any).L;
       
-      // 转换第一个点的坐标作为中心点
+      // 中心点
       let center: [number, number] = [35.0, 105.0];
       if (photos.length > 0) {
         const converted = wgs84ToGcj02(photos[0].lng, photos[0].lat);
-        center = [converted[1], converted[0]]; // Leaflet 用 [lat, lng]
+        center = [converted[1], converted[0]];
       }
         
-      const map = L.map('map-album').setView(center, 5);
+      map = L.map('map-album').setView(center, 5);
 
-      // 使用高德地图瓦片（国内访问快，不需要翻墙）
+      // 使用高德地图瓦片
       L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
         subdomains: ['1', '2', '3', '4'],
         attribution: '&copy; 高德地图',
         maxZoom: 18
       }).addTo(map);
 
-      // 添加标记（坐标自动转换）
+      // 自定义照片标记图标
+      const photoIcon = L.divIcon({
+        className: 'photo-marker',
+        html: '<div class="photo-marker-inner">📷</div>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      });
+
+      // 添加照片标记
       photos.forEach(photo => {
-        // 将 WGS84 坐标转换为 GCJ-02
         const [gcjLng, gcjLat] = wgs84ToGcj02(photo.lng, photo.lat);
         
-        const marker = L.marker([gcjLat, gcjLng]).addTo(map);
+        const marker = L.marker([gcjLat, gcjLng], { icon: photoIcon });
         
         const popupContent = `
           <div style="text-align: center; min-width: 180px;">
@@ -123,10 +230,141 @@ const photosJson = JSON.stringify(mapPhotos);
         `;
         
         marker.bindPopup(popupContent);
+        photoMarkers.push(marker);
+        if (showPhotos) marker.addTo(map);
       });
+
+      // 添加航线
+      flights.forEach(flight => {
+        if (flight.points.length < 2) return;
+        
+        // 转换所有轨迹点坐标
+        const latLngs = flight.points.map(p => {
+          const [gcjLng, gcjLat] = wgs84ToGcj02(p.lng, p.lat);
+          return [gcjLat, gcjLng];
+        });
+        
+        const airlineInfo = getAirlineInfo(flight.flightNumber);
+        
+        // 创建航线 polyline
+        const polyline = L.polyline(latLngs, {
+          color: flight.color || airlineInfo.color,
+          weight: 3,
+          opacity: 0.8,
+          smoothFactor: 1,
+          lineJoin: 'round'
+        });
+        
+        // 添加航线装饰（箭头）
+        // 简化：只在航线上添加起点和终点标记
+        const startPoint = latLngs[0];
+        const endPoint = latLngs[latLngs.length - 1];
+        
+        // 起点标记（起飞）
+        const startIcon = L.divIcon({
+          className: 'flight-marker start-marker',
+          html: `<div class="flight-marker-inner" style="background: ${flight.color || airlineInfo.color}">🛫</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+        
+        // 终点标记（降落）
+        const endIcon = L.divIcon({
+          className: 'flight-marker end-marker',
+          html: `<div class="flight-marker-inner" style="background: ${flight.color || airlineInfo.color}">🛬</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+        
+        const startMarker = L.marker(startPoint, { icon: startIcon });
+        const endMarker = L.marker(endPoint, { icon: endIcon });
+        
+        // 航班信息弹窗
+        const formatDate = (dateStr: string) => {
+          const parts = dateStr.split('.');
+          if (parts.length === 3) {
+            return `20${parts[0]}年${parts[1]}月${parts[2]}日`;
+          }
+          return dateStr;
+        };
+        
+        const popupContent = `
+          <div class="flight-popup">
+            <div class="flight-header" style="background: ${flight.color || airlineInfo.color}">
+              <span class="flight-number">${flight.flightNumber}</span>
+              <span class="airline-name">${airlineInfo.name}</span>
+            </div>
+            <div class="flight-details">
+              <div class="flight-route">
+                <span class="departure">${flight.departure || '未知'}</span>
+                <span class="arrow">→</span>
+                <span class="arrival">${flight.arrival || '未知'}</span>
+              </div>
+              <div class="flight-info-row">
+                <span>📅 ${formatDate(flight.date)}</span>
+              </div>
+              <div class="flight-info-row">
+                <span>✈️ ${flight.aircraftType || '未知机型'}</span>
+                <span>📝 ${flight.aircraftReg || '未知'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        polyline.bindPopup(popupContent, { className: 'flight-popup-container' });
+        startMarker.bindPopup(popupContent, { className: 'flight-popup-container' });
+        endMarker.bindPopup(popupContent, { className: 'flight-popup-container' });
+        
+        // 创建图层组
+        const flightGroup = L.layerGroup([polyline, startMarker, endMarker]);
+        flightLayers.push(flightGroup);
+        if (showFlights) flightGroup.addTo(map);
+      });
+
+      // 绑定控制事件
+      setupControls();
     };
     
     document.head.appendChild(script);
+  }
+
+  function setupControls() {
+    const showPhotosCheckbox = document.getElementById('show-photos') as HTMLInputElement;
+    const showFlightsCheckbox = document.getElementById('show-flights') as HTMLInputElement;
+    const closePanel = document.getElementById('close-flight-panel');
+    const infoPanel = document.getElementById('flight-info-panel');
+
+    if (showPhotosCheckbox) {
+      showPhotosCheckbox.addEventListener('change', () => {
+        showPhotos = showPhotosCheckbox.checked;
+        photoMarkers.forEach(marker => {
+          if (showPhotos) {
+            marker.addTo(map);
+          } else {
+            map.removeLayer(marker);
+          }
+        });
+      });
+    }
+
+    if (showFlightsCheckbox) {
+      showFlightsCheckbox.addEventListener('change', () => {
+        showFlights = showFlightsCheckbox.checked;
+        flightLayers.forEach(layer => {
+          if (showFlights) {
+            layer.addTo(map);
+          } else {
+            map.removeLayer(layer);
+          }
+        });
+      });
+    }
+
+    if (closePanel && infoPanel) {
+      closePanel.addEventListener('click', () => {
+        infoPanel.classList.add('hidden');
+      });
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -141,5 +379,224 @@ const photosJson = JSON.stringify(mapPhotos);
 <style>
   #map-album {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 控制面板样式 */
+  .map-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .control-group {
+    display: flex;
+    gap: 16px;
+  }
+
+  .control-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    user-select: none;
+    font-size: 14px;
+    color: var(--text-color, #333);
+  }
+
+  .control-label:hover {
+    background: var(--btn-hover-bg, rgba(0, 0, 0, 0.05));
+  }
+
+  .control-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary, #3b82f6);
+    cursor: pointer;
+  }
+
+  .control-icon {
+    font-size: 16px;
+  }
+
+  .stats-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted, #666);
+  }
+
+  .stats-info .divider {
+    opacity: 0.3;
+  }
+
+  /* 照片标记样式 */
+  :global(.photo-marker) {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  :global(.photo-marker-inner) {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+  }
+
+  :global(.photo-marker-inner::after) {
+    content: '📷';
+    transform: rotate(45deg);
+  }
+
+  /* 航班标记样式 */
+  :global(.flight-marker) {
+    background: transparent !important;
+    border: none !important;
+  }
+
+  :global(.flight-marker-inner) {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+  }
+
+  /* 航班弹窗样式 */
+  :global(.flight-popup-container .leaflet-popup-content-wrapper) {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  :global(.flight-popup-container .leaflet-popup-content) {
+    margin: 0;
+    min-width: 200px;
+  }
+
+  :global(.flight-popup) {
+    font-family: inherit;
+  }
+
+  :global(.flight-popup .flight-header) {
+    padding: 12px 16px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  :global(.flight-popup .flight-number) {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  :global(.flight-popup .airline-name) {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  :global(.flight-popup .flight-details) {
+    padding: 12px 16px;
+    background: var(--card-bg, #fff);
+  }
+
+  :global(.flight-popup .flight-route) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--text-color, #333);
+  }
+
+  :global(.flight-popup .flight-route .arrow) {
+    color: var(--primary, #3b82f6);
+  }
+
+  :global(.flight-popup .flight-info-row) {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted, #666);
+    margin-top: 6px;
+  }
+
+  /* 航班信息面板 */
+  .flight-info-panel {
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .flight-info-panel.hidden {
+    display: none;
+  }
+
+  .flight-info-panel .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color, #333);
+    transition: background 0.2s;
+  }
+
+  .flight-info-panel .close-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    .map-controls {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-group {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .stats-info {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
