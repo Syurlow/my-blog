@@ -247,13 +247,13 @@ export const fullscreenWallpaperConfig: FullscreenWallpaperConfig = {
 export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
-		LinkPreset.Archive,
 		{
 			name: "足迹地图",
-			url: "/my-blog/map/",
+			url: "/map/",
 			icon: "material-symbols:map",
 		},
-    // 支持自定义导航栏链接，支持多级菜单
+		LinkPreset.Archive,
+		// 支持自定义导航栏链接，支持多级菜单
 		{
 			name: "关于",
 			url: "/my-blog/about/",
