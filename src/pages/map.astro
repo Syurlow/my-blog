@@ -1,9 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapAlbum from '../components/MapAlbum.astro';
+import FullscreenWallpaper from '../components/misc/FullscreenWallpaper.astro';
 import { getFlightStats } from '../data/flightRoutes';
 import { getTrainStats } from '../data/trainRoutes';
 import { mapPhotos } from '../data/mapPhotos';
+import { fullscreenWallpaperConfig } from '../config';
 
 // 统计信息
 const flightStats = getFlightStats();
@@ -14,6 +16,9 @@ const trainCount = trainStats.totalTrips;
 ---
 
 <Layout title="足迹地图" description="我的旅行足迹和飞行航线">
+  <!-- 全屏壁纸背景 -->
+  <FullscreenWallpaper config={fullscreenWallpaperConfig} className="map-wallpaper" />
+  
   <div class="map-page-container">
     
     <!-- 顶部导航栏 -->
@@ -101,7 +106,15 @@ const trainCount = trainStats.totalTrips;
 </Layout>
 
 <style>
+  /* 壁纸始终显示 */
+  :global(.map-wallpaper) {
+    display: block !important;
+    opacity: 0.9 !important;
+  }
+
   .map-page-container {
+    position: relative;
+    z-index: 10;
     max-width: 1400px;
     margin: 0 auto;
     padding: 24px 16px;
@@ -122,12 +135,19 @@ const trainCount = trainStats.totalTrips;
     gap: 8px;
     padding: 10px 16px;
     border-radius: 10px;
-    background: var(--card-bg, #fff);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: var(--text-color, #333);
     text-decoration: none;
     font-weight: 500;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark) .back-btn {
+    background: rgba(30, 30, 30, 0.85);
+    color: #fff;
   }
 
   .back-btn:hover {
@@ -144,14 +164,16 @@ const trainCount = trainStats.totalTrips;
   .page-title {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-color, #333);
+    color: #fff;
     margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
   .page-subtitle {
     font-size: 0.875rem;
-    color: var(--text-muted, #666);
+    color: rgba(255, 255, 255, 0.9);
     margin-top: 4px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   }
 
   .stats-cards {
@@ -164,9 +186,15 @@ const trainCount = trainStats.totalTrips;
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: var(--card-bg, #fff);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark) .stat-card {
+    background: rgba(30, 30, 30, 0.85);
   }
 
   .stat-icon {
@@ -202,9 +230,15 @@ const trainCount = trainStats.totalTrips;
     gap: 24px;
     margin-top: 16px;
     padding: 12px 20px;
-    background: var(--card-bg, #fff);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark) .map-legend {
+    background: rgba(30, 30, 30, 0.85);
   }
 
   .legend-item {
