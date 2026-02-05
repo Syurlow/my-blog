@@ -484,6 +484,12 @@ export function initIceEffects(config?: Partial<IceEffectsConfig> | IceEffectsCo
 			globalIceEffectsManager.init();
 		}
 	}
+	
+	// 暴露到 window 对象方便调试
+	if (typeof window !== 'undefined') {
+		(window as any).iceEffectsManager = globalIceEffectsManager;
+		console.log('❄️ 管理器已挂载到 window.iceEffectsManager');
+	}
 }
 
 // 切换冰冻特效
