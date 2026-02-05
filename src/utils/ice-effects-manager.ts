@@ -208,12 +208,23 @@ export class IceEffectsManager {
 	}
 
 	init(): void {
-		if (!this.config.enable || this.isRunning) return;
+		if (!this.config.enable || this.isRunning) {
+			console.log('❄️ 跳过初始化: enable=', this.config.enable, 'isRunning=', this.isRunning);
+			return;
+		}
 
+		console.log('❄️ 创建Canvas...');
 		this.createCanvas();
+		console.log('❄️ Canvas创建完成:', this.canvas);
+		
+		console.log('❄️ 绑定事件...');
 		this.bindEvents();
+		
+		console.log('❄️ 启动动画...');
 		this.startAnimation();
+		
 		this.isRunning = true;
+		console.log('❄️ 冰冻特效管理器初始化完成! Canvas ID:', this.canvas?.id);
 	}
 
 	private createCanvas(): void {
@@ -266,12 +277,18 @@ export class IceEffectsManager {
 		if (distance > 5) {
 			this.createTrailParticles(e.clientX, e.clientY, dx, dy);
 			this.lastMousePos = { x: e.clientX, y: e.clientY };
+			// 调试：每50次移动输出一次日志
+			if (this.particles.length % 50 === 0) {
+				console.log('❄️ 粒子数量:', this.particles.length);
+			}
 		}
 	};
 
 	private handleClick = (e: MouseEvent): void => {
 		if (!this.config.clickEffect.enable) return;
+		console.log('❄️ 点击位置:', e.clientX, e.clientY);
 		this.createExplosionParticles(e.clientX, e.clientY);
+		console.log('❄️ 创建爆炸粒子, 当前总粒子数:', this.particles.length);
 	};
 
 	private createTrailParticles(x: number, y: number, dx: number, dy: number): void {
@@ -331,10 +348,17 @@ export class IceEffectsManager {
 	}
 
 	private startAnimation(): void {
+		let lastAnimationTime = 0;
+		
 		const animate = (currentTime: number) => {
 			if (!this.ctx || !this.canvas) return;
 
-			const deltaTime = Math.min((currentTime - this.lastTime) / 16.67, 2); // 限制delta避免跳帧
+			// 计算时间差
+			if (lastAnimationTime === 0) {
+				lastAnimationTime = currentTime;
+			}
+			const deltaTime = Math.min((currentTime - lastAnimationTime) / 16.67, 3); // 限制delta避免跳帧
+			lastAnimationTime = currentTime;
 
 			// 清空画布
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
