@@ -32,8 +32,9 @@ const diaryData: DiaryItem[] = [
 	},
 	{
 		id: 2,
-		content: "寒潮来袭！今天降温好厉害\n不过窝在家里写代码还是很舒服的~",
+		content: "寒潮来袭！今天降温好厉害\n不过窝在酒店里写代码还是很舒服的~",
 		date: "2026-01-24T14:00:00Z",
+		location: "扬州万豪万枫酒店",
 		mood: "惬意",
 		tags: ["日常"],
 	},

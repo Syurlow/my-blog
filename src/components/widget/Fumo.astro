@@ -1,0 +1,81 @@
+﻿---
+// Fumo 组件 - 点击播放 baka 音频
+---
+
+<div class="fumo-container">
+  <img 
+    id="fumo-img"
+    src="/my-blog/assets/images/fumo.png" 
+    alt="Fumo" 
+    class="fumo-image"
+  />
+  <audio id="fumo-audio" src="/my-blog/assets/audio/baka.aac" preload="auto"></audio>
+</div>
+
+<script>
+  const fumoImg = document.getElementById("fumo-img");
+  const fumoAudio = document.getElementById("fumo-audio") as HTMLAudioElement;
+  
+  if (fumoImg && fumoAudio) {
+    // 按下时缩小
+    fumoImg.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      fumoImg.classList.add("pressed");
+    });
+    
+    // 松开时恢复并播放音频
+    fumoImg.addEventListener("pointerup", () => {
+      fumoImg.classList.remove("pressed");
+      fumoAudio.currentTime = 0;
+      fumoAudio.play().catch(() => {});
+    });
+    
+    // 移出时恢复
+    fumoImg.addEventListener("pointerleave", () => {
+      fumoImg.classList.remove("pressed");
+    });
+    
+    // 取消时恢复
+    fumoImg.addEventListener("pointercancel", () => {
+      fumoImg.classList.remove("pressed");
+    });
+  }
+</script>
+
+<style>
+  .fumo-container {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    z-index: 40;
+    pointer-events: auto;
+  }
+  
+  .fumo-image {
+    width: 80px;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  
+  .fumo-image:hover {
+    transform: scale(1.05);
+  }
+  
+  .fumo-image.pressed {
+    transform: scale(0.9);
+  }
+  
+  @media (max-width: 768px) {
+    .fumo-container {
+      left: 8px;
+      bottom: 8px;
+    }
+    
+    .fumo-image {
+      width: 60px;
+    }
+  }
+</style>
