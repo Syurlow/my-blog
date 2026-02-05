@@ -176,6 +176,24 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     color: string;
   }
 
+  
+      // 多图片轮播事件处理
+      document.addEventListener('click', e => {
+        const dot = e.target.closest('.slider-dots .dot');
+        if (dot) {
+          const index = parseInt(dot.dataset.index);
+          const slider = dot.closest('.photo-slider');
+          if (slider) {
+            slider.querySelectorAll('.slider-img').forEach((img, i) => {
+              img.classList.toggle('active', i === index);
+            });
+            slider.querySelectorAll('.dot').forEach((d, i) => {
+              d.classList.toggle('active', i === index);
+            });
+          }
+        }
+      });
+
   function initMap() {
     const mapContainer = document.getElementById('map-album');
     if (!mapContainer) return;
@@ -245,17 +263,31 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
         
         const marker = L.marker([gcjLat, gcjLng], { icon: photoIcon });
         
+        // 处理多图片或单图片
+        const images = photo.images || (photo.imageUrl ? [photo.imageUrl] : []);
+        const imageCount = images.length;
+        const uniqueId = 'photo-' + Math.random().toString(36).substr(2, 8);
+        
+        let imageHTML = '';
+        if (imageCount === 1) {
+          imageHTML = `<img src="${images[0]}" alt="${photo.title}" class="photo-single-img">`;
+        } else if (imageCount > 1) {
+          imageHTML = `
+            <div class="photo-slider" id="${uniqueId}">
+              <div class="slider-container">${images.map((img, idx) => `<img src="${img}" class="slider-img ${idx === 0 ? 'active' : ''}" data-index="${idx}">`).join('')}</div>
+              <div class="slider-dots">${images.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}</div>
+            </div>`;
+        }
+        
         const popupContent = `
-          <div style="text-align: center; min-width: 180px;">
-            <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">${photo.title}</h3>
-            <img src="${photo.imageUrl}" alt="${photo.title}" 
-                 style="width: 100%; max-width: 180px; height: 100px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;"
-                 onerror="this.style.display='none'">
-            <p style="font-size: 12px; color: #666;">${photo.description || ''}</p>
+          <div class="map-photo-popup">
+            <h3 class="photo-title">${photo.title}</h3>
+            ${imageHTML}
+            ${photo.description ? `<p class="photo-desc">${photo.description}</p>` : ''}
           </div>
         `;
         
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupContent, { className: 'map-photo-popup-container', maxWidth: 280 });
         photoMarkers.push(marker);
         if (showPhotos) marker.addTo(map);
       });
@@ -805,5 +837,100 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
       width: 100%;
       justify-content: center;
     }
+  }
+
+  /* 地图煕片弹出样式 */
+  :global(.map-photo-popup-container .leaflet-popup-content-wrapper) {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  :global(.map-photo-popup-container .leaflet-popup-content) {
+    margin: 0;
+  }
+
+  :global(.map-photo-popup) {
+    text-align: center;
+    padding: 12px;
+    min-width: 200px;
+  }
+
+  :global(.map-photo-popup .photo-title) {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: var(--text-color, #333);
+  }
+
+  :global(.map-photo-popup .photo-desc) {
+    font-size: 12px;
+    color: var(--text-muted, #666);
+    margin-top: 8px;
+  }
+
+  :global(.map-photo-popup .photo-single-img) {
+    width: 100%;
+    max-width: 220px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  /* 多图片轮播样式 */
+  :global(.map-photo-popup .photo-slider) {
+    position: relative;
+    width: 220px;
+    height: 140px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  :global(.map-photo-popup .slider-container) {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  :global(.map-photo-popup .slider-img) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  :global(.map-photo-popup .slider-img.active) {
+    opacity: 1;
+  }
+
+  :global(.map-photo-popup .slider-dots) {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+
+  :global(.map-photo-popup .slider-dots .dot) {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  :global(.map-photo-popup .slider-dots .dot.active) {
+    background: #fff;
+  }
+
+  :global(.map-photo-popup .slider-dots .dot:hover) {
+    background: rgba(255, 255, 255, 0.8);
   }
 </style>

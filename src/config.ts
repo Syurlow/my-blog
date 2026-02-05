@@ -1,4 +1,4 @@
-import type {
+﻿import type {
 	AnnouncementConfig,
 	CommentConfig,
 	ExpressiveCodeConfig,
@@ -321,7 +321,7 @@ export const navBarConfig: NavBarConfig = {
 					external: true,
 				},
 				{
-    				name: "MapPhotos", // 或者叫 "Map"
+    				name: "足迹地图", // 或者叫 "Map"
     				url: "/map/", // 记得加上你的 base path
     				icon: "material-symbols:map", // 换个地图图标
 				},
