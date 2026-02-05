@@ -1,9 +1,11 @@
 ---
 import { mapPhotos } from '../data/mapPhotos';
 import { flightsMeta } from '../data/flightRoutes';
+import { trainsMeta } from '../data/trainRoutes';
 
 const photosJson = JSON.stringify(mapPhotos);
 const flightsMetaJson = JSON.stringify(flightsMeta);
+const trainsMetaJson = JSON.stringify(trainsMeta);
 ---
 
 <!-- 控制面板 -->
@@ -17,13 +19,20 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
     <label class="control-label">
       <input type="checkbox" id="show-flights" checked />
       <span class="control-icon">✈️</span>
-      <span>航线</span>
+      <span>舩线</span>
+    </label>
+    <label class="control-label">
+      <input type="checkbox" id="show-trains" checked />
+      <span class="control-icon">🚄</span>
+      <span>铄路</span>
     </label>
   </div>
   <div class="stats-info" id="stats-info">
     <span id="photo-count">0 张照片</span>
     <span class="divider">|</span>
     <span id="flight-count">0 条航线</span>
+    <span class="divider">|</span>
+    <span id="train-count">0 条铁路</span>
   </div>
 </div>
 
@@ -41,8 +50,9 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
 
 <!-- 照片数据 -->
 <script is:inline id="map-photos-data" type="application/json" set:html={photosJson}></script>
-<!-- 航班元数据（不含轨迹点） -->
+<!-- 航班元数据（不含轨迹点） -->\n<!-- 火车元数据（不含轨迹点） -->
 <script is:inline id="map-flights-meta" type="application/json" set:html={flightsMetaJson}></script>
+<script is:inline id="map-trains-meta" type="application/json" set:html={trainsMetaJson}></script>
 
 <script>
   // 航空公司信息
@@ -124,6 +134,8 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
   let flightLayers: any[] = [];
   let showPhotos = true;
   let showFlights = true;
+  let trainLayers: any[] = [];
+  let showTrains = true;
 
   interface Photo {
     title: string;
@@ -139,6 +151,16 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
     altitude: number;
     heading: number;
     timestamp: string;
+  }
+
+  interface Train {
+    id: string;
+    trainNumber: string;
+    date: string;
+    from: string;
+    to: string;
+    stations: { name: string; lat: number; lng: number; }[];
+    route: [number, number][];
   }
 
   interface Flight {
@@ -165,13 +187,16 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
         // 解析照片数据
     const photosScript = document.getElementById('map-photos-data');
     const flightsMetaScript = document.getElementById('map-flights-meta');
+    const trainsMetaScript = document.getElementById('map-trains-meta');
     
     let photos: Photo[] = [];
     let flightsMeta: any[] = [];
+    let trainsMeta: any[] = [];
     
     try {
       photos = JSON.parse(photosScript?.textContent || '[]');
       flightsMeta = JSON.parse(flightsMetaScript?.textContent || '[]');
+      trainsMeta = JSON.parse(trainsMetaScript?.textContent || '[]');
     } catch (e) {
       console.error('Failed to parse data:', e);
     }
@@ -181,6 +206,8 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
     const flightCountEl = document.getElementById('flight-count');
     if (photoCountEl) photoCountEl.textContent = `${photos.length} 张照片`;
     if (flightCountEl) flightCountEl.textContent = `${flightsMeta.length} 条航线`;
+    const trainCountEl = document.getElementById('train-count');
+    if (trainCountEl) trainCountEl.textContent = `${trainsMeta.length} 条铁路`;
 
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
@@ -259,7 +286,19 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
     }
   }
 
-  // 渲染航班数据
+  // 加载火车数据
+  async function loadTrainData(): Promise<Train[]> {
+    try {
+      const response = await fetch('/my-blog/data/trains.json');
+      if (!response.ok) throw new Error('Failed to fetch trains data');
+      return await response.json();
+    } catch (error) {
+      console.error('Error loading train data:', error);
+      return [];
+    }
+  }
+
+  // 渲染灮超数据
   function renderFlights(flights: Flight[], L: any) {
     flights.forEach(flight => {
       if (!flight.points || flight.points.length < 2) return;
@@ -345,6 +384,90 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
         const flightGroup = L.layerGroup([polyline, startMarker, endMarker]);
         flightLayers.push(flightGroup);
         if (showFlights) flightGroup.addTo(map);
+    });
+  }
+
+  // 获取火车类型颜色
+  function getTrainColor(trainNumber: string): string {
+    const prefix = trainNumber.charAt(0).toUpperCase();
+    const colors: Record<string, string> = {
+      'G': '#e74c3c', // 高铁 - 红色
+      'D': '#3498db', // 动轧 - 蓝色
+      'C': '#9e59b6', // 城际 - 紫色
+			'Z': '#1abc9c', // 直达特快 - 青色
+      'T': '#f39c12', // 特快 - 橙色
+      'K': '#27ae60', // 快速 - 绿色
+			'S': '#9559b6', // 市郊 - 深紫色
+    };
+    return colors[prefix] || '#7f8c8d';
+  }
+
+  // 渲染火车数据
+  function renderTrains(trains: Train[], L: any) {
+    trains.forEach(train => {
+      if (!train.route || train.route.length < 2) return;
+      
+      // 转换坐标 - trains data format is [lng, lat]
+      const latLngs = train.route.map(p => {
+        const [gcjLng, gcjLat] = wgs84ToGcj02(p[0], p[1]);
+        return [gcjLat, gcjLng];
+      });
+      
+      const color = getTrainColor(train.trainNumber);
+      
+      // 创建铁路线
+      const polyline = L.polyline(latLngs, {
+        color: color,
+        weight: 2.5,
+        opacity: 0.8,
+        smoothFactor: 1
+      });
+      
+      // 弹窗内容
+      const popupContent = `<div class="train-popup">
+        <div class="train-header" style="background: ${color}">
+          <span class="train-number">${train.trainNumber}</span>
+        </div>
+        <div class="train-details">
+          <div class="train-route">
+            <span>${train.from}</span>
+            <span class="arrow">→</span>
+            <span>${train.to}</span>
+          </div>
+          <div class="train-info-row">
+            <span>📅 ${train.date}</span>
+          </div>
+          <div class="train-info-row">
+            <span>🚉 ${train.stations?.length || 2} 个站点</span>
+          </div>
+        </div>
+      </div>`;
+      
+      polyline.bindPopup(popupContent, { className: 'train-popup-container' });
+      
+      // 添加站点标记
+      const stationMarkers: any[] = [];
+      if (train.stations) {
+        train.stations.forEach((station, idx) => {
+          const [gcjLng, gcjLat] = wgs84ToGcj02(station.lng, station.lat);
+          const isEndpoint = idx === 0 || idx === train.stations.length - 1;
+          
+          const icon = L.divIcon({
+            className: 'train-station-marker',
+            html: `<div style="background: ${color}; width: ${isEndpoint ? 12 : 8}px; height: ${isEndpoint ? 12 : 8}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [isEndpoint ? 12 : 8, isEndpoint ? 12 : 8],
+            iconAnchor: [isEndpoint ? 6 : 4, isEndpoint ? 6 : 4]
+          });
+          
+          const marker = L.marker([gcjLat, gcjLng], { icon });
+          marker.bindPopup(`<b>${station.name}</b>`);
+          stationMarkers.push(marker);
+        });
+      }
+      
+      const trainGroup = L.layerGroup([polyline, ...stationMarkers]);
+      trainLayers.push(trainGroup);
+      if (showTrains) trainGroup.addTo(map);
     });
   }
 
@@ -596,6 +719,63 @@ const flightsMetaJson = JSON.stringify(flightsMeta);
     justify-content: center;
     color: var(--text-color, #333);
     transition: background 0.2s;
+  }
+
+  /* 火车弹窗样式 */
+  :global(.train-popup-container .leaflet-popup-content-wrapper) {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  :global(.train-popup-container .leaflet-popup-content) {
+    margin: 0;
+    min-width: 180px;
+  }
+
+  :global(.train-popup .train-header) {
+    padding: 10px 14px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  :global(.train-popup .train-number) {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  :global(.train-popup .train-details) {
+    padding: 10px 14px;
+    background: var(--card-bg, #fff);
+  }
+
+  :global(.train-popup .train-route) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-color, #333);
+  }
+
+  :global(.train-popup .train-route .arrow) {
+    color: var(--primary, #3b82f6);
+  }
+
+  :global(.train-popup .train-info-row) {
+    font-size: 12px;
+    color: var(--text-muted, #666);
+    margin-top: 4px;
+    text-align: center;
+  }
+
+  :global(.train-station-marker) {
+    background: transparent !important;
+    border: none !important;
   }
 
   .flight-info-panel .close-btn:hover {
