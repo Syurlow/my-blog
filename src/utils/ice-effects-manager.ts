@@ -435,8 +435,22 @@ export const defaultIceEffectsConfig: IceEffectsConfig = {
 };
 
 // 初始化冰冻特效
-export function initIceEffects(config?: Partial<IceEffectsConfig>): void {
-	const finalConfig = { ...defaultIceEffectsConfig, ...config };
+export function initIceEffects(config?: Partial<IceEffectsConfig> | IceEffectsConfig): void {
+	// 深度合并配置
+	const finalConfig: IceEffectsConfig = {
+		...defaultIceEffectsConfig,
+		...config,
+		trail: {
+			...defaultIceEffectsConfig.trail,
+			...(config?.trail || {}),
+		},
+		clickEffect: {
+			...defaultIceEffectsConfig.clickEffect,
+			...(config?.clickEffect || {}),
+		},
+	};
+	
+	console.log('❄️ 初始化冰冻特效:', finalConfig.enable ? '已启用' : '已禁用');
 	
 	if (globalIceEffectsManager) {
 		globalIceEffectsManager.updateConfig(finalConfig);

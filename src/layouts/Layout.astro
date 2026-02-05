@@ -305,7 +305,19 @@ if (siteConfig.font) {
 			}
 
 			// Load the hue from local storage
-			const hue = localStorage.getItem("hue") || configHue;
+			// 如果配置的 hue 发生变化，强制更新（解决配置更新后不生效的问题）
+			const storedHue = localStorage.getItem("hue");
+			const storedConfigHue = localStorage.getItem("configHue");
+			let hue = storedHue || configHue;
+			
+			// 如果配置的默认 hue 值改变了，重置用户的 hue 设置
+			if (storedConfigHue !== String(configHue)) {
+				hue = configHue;
+				localStorage.setItem("hue", String(configHue));
+				localStorage.setItem("configHue", String(configHue));
+				console.log('❄️ 主题色已更新为:', configHue);
+			}
+			
 			document.documentElement.style.setProperty("--hue", hue);
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
@@ -850,11 +862,30 @@ function disableAnimation() {
 
 	// 初始化冰冻特效 - 琪露诺专属 ❄️
 	function setupIceEffects() {
-		const iceEffectsConfig = (widgetConfigs as any)?.iceEffects;
-		if (!iceEffectsConfig || !iceEffectsConfig.enable) return;
-		if ((window as any).iceEffectsInitialized) return;
-		initIceEffects(iceEffectsConfig);
-		(window as any).iceEffectsInitialized = true;
+		try {
+			const iceEffectsConfig = (widgetConfigs as any)?.iceEffects;
+			console.log('❄️ 冰冻特效配置:', iceEffectsConfig);
+			
+			if (!iceEffectsConfig) {
+				console.log('❄️ 冰冻特效配置不存在');
+				return;
+			}
+			if (!iceEffectsConfig.enable) {
+				console.log('❄️ 冰冻特效已禁用');
+				return;
+			}
+			if ((window as any).iceEffectsInitialized) {
+				console.log('❄️ 冰冻特效已初始化，跳过');
+				return;
+			}
+			
+			console.log('❄️ 正在初始化冰冻特效...');
+			initIceEffects(iceEffectsConfig);
+			(window as any).iceEffectsInitialized = true;
+			console.log('❄️ 冰冻特效初始化完成!');
+		} catch (error) {
+			console.error('❄️ 冰冻特效初始化失败:', error);
+		}
 	}
 
 	if (document.readyState === "loading") {
