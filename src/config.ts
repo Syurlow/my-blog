@@ -4,6 +4,7 @@
 	ExpressiveCodeConfig,
 	FooterConfig,
 	FullscreenWallpaperConfig,
+	IceEffectsConfig,
 	LicenseConfig,
 	MusicPlayerConfig,
 	NavBarConfig,
@@ -32,7 +33,7 @@ export const siteConfig: SiteConfig = {
 	lang: SITE_LANG,
 
 	themeColor: {
-		hue: 60, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
+		hue: 200, // 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345 ❄️琪露诺冰蓝色
 		fixed: false, // 对访问者隐藏主题色选择器
 	},
 
@@ -660,16 +661,16 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 };
 
 export const sakuraConfig: SakuraConfig = {
-	enable: true, // 默认关闭樱花特效
-	sakuraNum: 60, // 樱花数量
-	limitTimes: -1, // 樱花越界限制次数，-1为无限循环
+	enable: true, // 默认关闭樱花特效（现在是雪花啦~ ❄️）
+	sakuraNum: 60, // 雪花数量
+	limitTimes: -1, // 雪花越界限制次数，-1为无限循环
 	size: {
-		min: 0.3, // 樱花最小尺寸倍数
-		max: 1.1, // 樱花最大尺寸倍数
+		min: 0.3, // 雪花最小尺寸倍数
+		max: 1.1, // 雪花最大尺寸倍数
 	},
 	opacity: {
-		min: 0.3, // 樱花最小不透明度
-		max: 0.9, // 樱花最大不透明度
+		min: 0.3, // 雪花最小不透明度
+		max: 0.9, // 雪花最大不透明度
 	},
 	speed: {
 		horizontal: {
@@ -683,7 +684,43 @@ export const sakuraConfig: SakuraConfig = {
 		rotation: 0.001, // 旋转速度
 		fadeSpeed: 0.03, // 消失速度，不应大于最小不透明度
 	},
-	zIndex: 100, // 层级，确保樱花在合适的层级显示
+	zIndex: 100, // 层级，确保雪花在合适的层级显示
+};
+
+// 冰冻特效配置 - 琪露诺专属 ❄️
+export const iceEffectsConfig: IceEffectsConfig = {
+	enable: true, // 启用冰冻特效
+	// 鼠标冰冻轨迹配置
+	trail: {
+		enable: true, // 启用鼠标轨迹
+		particleCount: 3, // 每次移动产生的粒子数量
+		particleSize: { min: 3, max: 8 }, // 粒子大小范围
+		particleLife: 800, // 粒子生命周期（毫秒）
+		colors: [
+			'rgba(135, 206, 250, 0.8)', // 浅天蓝
+			'rgba(173, 216, 230, 0.8)', // 浅蓝
+			'rgba(224, 255, 255, 0.8)', // 淡青色
+			'rgba(176, 224, 230, 0.8)', // 粉蓝
+			'rgba(127, 255, 212, 0.6)', // 碧绿色
+		],
+		fadeSpeed: 0.02, // 消失速度
+	},
+	// 点击冰花绽放配置
+	clickEffect: {
+		enable: true, // 启用点击效果
+		particleCount: 16, // 绽放粒子数量
+		particleSize: { min: 5, max: 15 }, // 粒子大小范围
+		explosionRadius: 100, // 爆炸半径
+		duration: 1200, // 动画持续时间（毫秒）
+		colors: [
+			'rgba(135, 206, 250, 0.9)', // 浅天蓝
+			'rgba(173, 216, 230, 0.9)', // 浅蓝
+			'rgba(224, 255, 255, 0.9)', // 淡青色
+			'rgba(255, 255, 255, 0.9)', // 白色
+			'rgba(176, 224, 230, 0.9)', // 粉蓝
+		],
+	},
+	zIndex: 9999, // 层级，确保冰冻特效在最上层
 };
 
 // Pio 看板娘配置
@@ -720,6 +757,7 @@ export const widgetConfigs = {
 	fullscreenWallpaper: fullscreenWallpaperConfig,
 	pio: pioConfig, // 添加 pio 配置
 	share: shareConfig, // 添加分享配置
+	iceEffects: iceEffectsConfig, // 琪露诺冰冻特效 ❄️
 } as const;
 
 export const umamiConfig = {

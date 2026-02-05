@@ -495,6 +495,7 @@ if (siteConfig.font) {
 	import { siteConfig } from "../config";
 	import { widgetConfigs } from "../config";
 	import { initSakura } from "../utils/sakura-manager";
+	import { initIceEffects } from "../utils/ice-effects-manager";
 
 	// const setTimeout = window.setTimeout;
 	// @ts-ignore
@@ -847,10 +848,23 @@ function disableAnimation() {
 		(window as any).sakuraInitialized = true;
 	}
 
+	// 初始化冰冻特效 - 琪露诺专属 ❄️
+	function setupIceEffects() {
+		const iceEffectsConfig = (widgetConfigs as any)?.iceEffects;
+		if (!iceEffectsConfig || !iceEffectsConfig.enable) return;
+		if ((window as any).iceEffectsInitialized) return;
+		initIceEffects(iceEffectsConfig);
+		(window as any).iceEffectsInitialized = true;
+	}
+
 	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", setupSakura);
+		document.addEventListener("DOMContentLoaded", () => {
+			setupSakura();
+			setupIceEffects();
+		});
 	} else {
 		setupSakura();
+		setupIceEffects();
 	}
 
 	let fancyboxSelectors: string[] = [];

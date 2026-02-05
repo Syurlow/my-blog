@@ -457,3 +457,30 @@ export type PioConfig = {
 export type ShareConfig = {
 	enable: boolean; // 是否启用分享功能
 };
+
+/**
+ * 冰冻特效配置 - 琪露诺专属 ❄️
+ * 包含：鼠标冰冻轨迹 + 点击冰花绽放
+ */
+export type IceEffectsConfig = {
+	enable: boolean; // 是否启用冰冻特效
+	// 鼠标冰冻轨迹配置
+	trail: {
+		enable: boolean; // 是否启用鼠标轨迹
+		particleCount: number; // 每次移动产生的粒子数量
+		particleSize: { min: number; max: number }; // 粒子大小范围
+		particleLife: number; // 粒子生命周期（毫秒）
+		colors: string[]; // 冰晶颜色数组
+		fadeSpeed: number; // 消失速度
+	};
+	// 点击冰花绽放配置
+	clickEffect: {
+		enable: boolean; // 是否启用点击效果
+		particleCount: number; // 绽放粒子数量
+		particleSize: { min: number; max: number }; // 粒子大小范围
+		explosionRadius: number; // 爆炸半径
+		duration: number; // 动画持续时间（毫秒）
+		colors: string[]; // 冰花颜色数组
+	};
+	zIndex: number; // 层级
+};
