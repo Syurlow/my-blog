@@ -140,7 +140,8 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
   interface Photo {
     title: string;
     description?: string;
-    imageUrl: string;
+    imageUrl?: string;
+    images?: string[];
     lat: number;
     lng: number;
   }
@@ -178,16 +179,17 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
 
   
       // 多图片轮播事件处理
-      document.addEventListener('click', e => {
-        const dot = e.target.closest('.slider-dots .dot');
+      document.addEventListener('click', (e: MouseEvent) => {
+        if (!e.target) return;
+        const dot = (e.target as HTMLElement).closest('.slider-dots .dot');
         if (dot) {
-          const index = parseInt(dot.dataset.index);
+          const index = parseInt((dot as HTMLElement).dataset.index || '0');
           const slider = dot.closest('.photo-slider');
           if (slider) {
-            slider.querySelectorAll('.slider-img').forEach((img, i) => {
+            slider.querySelectorAll('.slider-img').forEach((img: Element, i: number) => {
               img.classList.toggle('active', i === index);
             });
-            slider.querySelectorAll('.dot').forEach((d, i) => {
+            slider.querySelectorAll('.dot').forEach((d: Element, i: number) => {
               d.classList.toggle('active', i === index);
             });
           }
@@ -266,7 +268,7 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
         // 处理多图片或单图片
         const images = photo.images || (photo.imageUrl ? [photo.imageUrl] : []);
         const imageCount = images.length;
-        const uniqueId = 'photo-' + Math.random().toString(36).substr(2, 8);
+        const uniqueId = 'photo-' + Math.random().toString(36).substring(2, 10);
         
         let imageHTML = '';
         if (imageCount === 1) {
@@ -274,8 +276,8 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
         } else if (imageCount > 1) {
           imageHTML = `
             <div class="photo-slider" id="${uniqueId}">
-              <div class="slider-container">${images.map((img, idx) => `<img src="${img}" class="slider-img ${idx === 0 ? 'active' : ''}" data-index="${idx}">`).join('')}</div>
-              <div class="slider-dots">${images.map((_, idx) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}</div>
+              <div class="slider-container">${images.map((img: string, idx: number) => `<img src="${img}" class="slider-img ${idx === 0 ? 'active' : ''}" data-index="${idx}">`).join('')}</div>
+              <div class="slider-dots">${images.map((_: string, idx: number) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}</div>
             </div>`;
         }
         

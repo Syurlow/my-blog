@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapAlbum from '../components/MapAlbum.astro';
-import { flightsMeta, getFlightStats } from '../data/flightRoutes';
-import { trainsMeta, getTrainStats } from '../data/trainRoutes';
+import { getFlightStats } from '../data/flightRoutes';
+import { getTrainStats } from '../data/trainRoutes';
 import { mapPhotos } from '../data/mapPhotos';
 
 // 统计信息
@@ -11,7 +11,6 @@ const trainStats = getTrainStats();
 const flightCount = flightStats.totalFlights;
 const photoCount = mapPhotos.length;
 const trainCount = trainStats.totalTrips;
-const stationCount = trainStats.totalStations;
 ---
 
 <Layout title="足迹地图" description="我的旅行足迹和飞行航线">
