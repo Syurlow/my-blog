@@ -230,25 +230,60 @@ export class IceEffectsManager {
 	private createCanvas(): void {
 		this.canvas = document.createElement('canvas');
 		this.canvas.id = 'canvas_ice_effects';
-		this.canvas.width = window.innerWidth;
-		this.canvas.height = window.innerHeight;
+		
+		// 使用完整的屏幕尺寸，包括设备像素比
+		const dpr = window.devicePixelRatio || 1;
+		const width = window.innerWidth;
+		const height = window.innerHeight;
+		
+		// 设置 canvas 的实际像素尺寸
+		this.canvas.width = width * dpr;
+		this.canvas.height = height * dpr;
+		
+		// 设置 canvas 的 CSS 尺寸（显示尺寸）
 		this.canvas.style.cssText = `
 			position: fixed;
 			left: 0;
 			top: 0;
+			width: ${width}px;
+			height: ${height}px;
 			pointer-events: none;
 			z-index: ${this.config.zIndex};
 		`;
+		
 		document.body.appendChild(this.canvas);
 		this.ctx = this.canvas.getContext('2d');
+		
+		// 根据设备像素比缩放 context
+		if (this.ctx && dpr !== 1) {
+			this.ctx.scale(dpr, dpr);
+		}
+		
+		console.log(`❄️ Canvas 尺寸: ${width}x${height}, DPR: ${dpr}`);
 
 		window.addEventListener('resize', this.handleResize);
 	}
 
 	private handleResize = (): void => {
-		if (this.canvas) {
-			this.canvas.width = window.innerWidth;
-			this.canvas.height = window.innerHeight;
+		if (this.canvas && this.ctx) {
+			const dpr = window.devicePixelRatio || 1;
+			const width = window.innerWidth;
+			const height = window.innerHeight;
+			
+			// 更新 canvas 实际像素尺寸
+			this.canvas.width = width * dpr;
+			this.canvas.height = height * dpr;
+			
+			// 更新 CSS 尺寸
+			this.canvas.style.width = `${width}px`;
+			this.canvas.style.height = `${height}px`;
+			
+			// 重新设置缩放
+			if (dpr !== 1) {
+				this.ctx.scale(dpr, dpr);
+			}
+			
+			console.log(`❄️ Canvas 调整尺寸: ${width}x${height}`);
 		}
 	};
 

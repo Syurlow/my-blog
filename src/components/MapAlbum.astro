@@ -243,12 +243,64 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
         
       map = L.map('map-album').setView(center, 5);
 
-      // 使用高德地图瓦片
-      L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-        subdomains: ['1', '2', '3', '4'],
-        attribution: '&copy; 高德地图',
-        maxZoom: 18
-      }).addTo(map);
+      // 根据用户位置选择地图瓦片
+      // 检测是否在中国（通过尝试加载高德地图或使用IP检测）
+      async function detectLocationAndSetTileLayer() {
+        let isInChina = true; // 默认假设在中国
+        
+        try {
+          // 使用免费的IP检测API
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒超时
+          
+          const response = await fetch('https://ipapi.co/json/', {
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            const data = await response.json();
+            isInChina = data.country_code === 'CN';
+            console.log(`🗺️ 检测到位置: ${data.country_name} (${data.country_code})`);
+          }
+        } catch (error) {
+          // 如果IP检测失败，尝试检测高德地图是否可访问
+          console.log('🗺️ IP检测失败，尝试检测高德地图可用性...');
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
+            await fetch('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=0&y=0&z=0', {
+              mode: 'no-cors',
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            isInChina = true;
+          } catch {
+            isInChina = false;
+          }
+        }
+        
+        if (isInChina) {
+          // 国内用户：使用高德地图
+          console.log('🗺️ 使用高德地图');
+          L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1', '2', '3', '4'],
+            attribution: '&copy; 高德地图',
+            maxZoom: 18
+          }).addTo(map);
+        } else {
+          // 国外用户：使用 OpenStreetMap
+          console.log('🗺️ 使用 OpenStreetMap');
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            subdomains: ['a', 'b', 'c'],
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+          }).addTo(map);
+        }
+      }
+      
+      detectLocationAndSetTileLayer();
 
       // 自定义照片标记图标
       const photoIcon = L.divIcon({
