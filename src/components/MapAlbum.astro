@@ -269,6 +269,13 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
       }).catch(err => {
         console.error('Failed to load flight data:', err);
       });
+
+      // 加载和渲染灮超数据
+      loadTrainData().then(trains => {
+        renderTrains(trains, L);
+      }).catch(err => {
+        console.error('Failed to load train data:', err);
+      });
     };
     
     document.head.appendChild(script);
