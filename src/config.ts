@@ -248,10 +248,15 @@ export const navBarConfig: NavBarConfig = {
 	links: [
 		LinkPreset.Home,
 		LinkPreset.Archive,
-		// 支持自定义导航栏链接，支持多级菜单
+		{
+			name: "足迹地图",
+			url: "/my-blog/map/",
+			icon: "material-symbols:map",
+		},
+    // 支持自定义导航栏链接，支持多级菜单
 		{
 			name: "关于",
-			url: "/about/",
+			url: "/my-blog/about/",
 			icon: "material-symbols:person",
 			children: [
 				{
@@ -320,13 +325,7 @@ export const navBarConfig: NavBarConfig = {
 					icon: "material-symbols:devices",
 					external: true,
 				},
-				{
-    				name: "足迹地图", // 或者叫 "Map"
-    				url: "/map/", // 记得加上你的 base path
-    				icon: "material-symbols:map", // 换个地图图标
-				},
-
-			],
+				],
 		},
 		{
 			name: "About",
@@ -483,7 +482,7 @@ export const announcementConfig: AnnouncementConfig = {
 	link: {
 		enable: true, // 启用链接
 		text: "Learn More", // 链接文本
-		url: "/about/", // 链接 URL
+		url: "/my-blog/about/", // 链接 URL
 		external: false, // 内部链接
 	},
 };
