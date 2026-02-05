@@ -240,7 +240,9 @@ function handleLoadSuccess() {
 		currentSong.duration = duration;
 	}
 
-	if (willAutoPlay || isPlaying) {
+	// 检查用户是否手动暂停过
+	try { userPaused = localStorage.getItem("musicPlayerPaused") === "true"; } catch(e) {}
+	if ((willAutoPlay || isPlaying) && !userPaused) {
         const playPromise = audio.play();
 		if (playPromise !== undefined) {
             playPromise.catch((error) => {
