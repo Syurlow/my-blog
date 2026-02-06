@@ -1,0 +1,224 @@
+---
+/**
+ * 天气小组件
+ * 显示访客当前位置的天气信息
+ */
+---
+
+<div id="weather-widget" class="weather-widget card-base">
+	<div class="weather-loading">
+		<span class="loading-icon">🌤️</span>
+		<span class="loading-text">获取天气中...</span>
+	</div>
+	<div class="weather-content hidden">
+		<div class="weather-main">
+			<span id="weather-icon" class="weather-icon">☀️</span>
+			<span id="weather-temp" class="weather-temp">--°C</span>
+		</div>
+		<div class="weather-info">
+			<span id="weather-desc" class="weather-desc">--</span>
+			<span id="weather-location" class="weather-location">📍 --</span>
+		</div>
+		<div class="weather-details">
+			<span id="weather-humidity" class="detail-item">💧 --%</span>
+			<span id="weather-wind" class="detail-item">🌬️ --</span>
+		</div>
+	</div>
+	<div class="weather-error hidden">
+		<span>😅 获取天气失败</span>
+	</div>
+</div>
+
+<style>
+	.weather-widget {
+		padding: 16px;
+		margin-bottom: 1rem;
+	}
+
+	.weather-loading {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		justify-content: center;
+		padding: 8px 0;
+	}
+
+	.loading-icon {
+		font-size: 1.5rem;
+		animation: pulse 1.5s infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.5; }
+	}
+
+	.loading-text {
+		color: var(--text-muted);
+		font-size: 0.875rem;
+	}
+
+	.weather-content {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.weather-content.hidden,
+	.weather-error.hidden {
+		display: none;
+	}
+
+	.weather-main {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+	}
+
+	.weather-icon {
+		font-size: 2.5rem;
+	}
+
+	.weather-temp {
+		font-size: 2rem;
+		font-weight: 700;
+		color: var(--text-color);
+	}
+
+	.weather-info {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.weather-desc {
+		font-size: 1rem;
+		color: var(--text-color);
+	}
+
+	.weather-location {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+
+	.weather-details {
+		display: flex;
+		justify-content: center;
+		gap: 16px;
+		margin-top: 4px;
+		padding-top: 8px;
+		border-top: 1px dashed var(--line-divider);
+	}
+
+	.detail-item {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+
+	.weather-error {
+		text-align: center;
+		color: var(--text-muted);
+		font-size: 0.875rem;
+		padding: 8px 0;
+	}
+</style>
+
+<script>
+	// 天气图标映射
+	const weatherIcons: Record<string, string> = {
+		'Clear': '☀️',
+		'Sunny': '☀️',
+		'Partly cloudy': '⛅',
+		'Cloudy': '☁️',
+		'Overcast': '☁️',
+		'Mist': '🌫️',
+		'Fog': '🌫️',
+		'Light rain': '🌦️',
+		'Rain': '🌧️',
+		'Heavy rain': '🌧️',
+		'Thunderstorm': '⛈️',
+		'Snow': '🌨️',
+		'Light snow': '🌨️',
+		'Heavy snow': '❄️',
+		'Sleet': '🌨️',
+		'default': '🌤️'
+	};
+
+	function getWeatherIcon(condition: string): string {
+		for (const [key, icon] of Object.entries(weatherIcons)) {
+			if (condition.toLowerCase().includes(key.toLowerCase())) {
+				return icon;
+			}
+		}
+		return weatherIcons['default'];
+	}
+
+	async function initWeather() {
+		const widget = document.getElementById('weather-widget');
+		if (!widget) return;
+
+		const loading = widget.querySelector('.weather-loading');
+		const content = widget.querySelector('.weather-content');
+		const error = widget.querySelector('.weather-error');
+
+		try {
+			// 获取位置信息
+			const locationRes = await fetch('https://ipapi.co/json/', {
+				signal: AbortSignal.timeout(5000)
+			});
+			
+			if (!locationRes.ok) throw new Error('Location failed');
+			const location = await locationRes.json();
+
+			// 使用 wttr.in 免费天气 API（无需 API Key）
+			const weatherRes = await fetch(
+				`https://wttr.in/${location.city}?format=j1`,
+				{ signal: AbortSignal.timeout(8000) }
+			);
+
+			if (!weatherRes.ok) throw new Error('Weather failed');
+			const weather = await weatherRes.json();
+
+			// 解析天气数据
+			const current = weather.current_condition[0];
+			const temp = current.temp_C;
+			const desc = current.lang_zh?.[0]?.value || current.weatherDesc[0].value;
+			const humidity = current.humidity;
+			const windSpeed = current.windspeedKmph;
+
+			// 更新 UI
+			const iconEl = document.getElementById('weather-icon');
+			const tempEl = document.getElementById('weather-temp');
+			const descEl = document.getElementById('weather-desc');
+			const locEl = document.getElementById('weather-location');
+			const humidityEl = document.getElementById('weather-humidity');
+			const windEl = document.getElementById('weather-wind');
+
+			if (iconEl) iconEl.textContent = getWeatherIcon(desc);
+			if (tempEl) tempEl.textContent = `${temp}°C`;
+			if (descEl) descEl.textContent = desc;
+			if (locEl) locEl.textContent = `📍 ${location.city}, ${location.region}`;
+			if (humidityEl) humidityEl.textContent = `💧 ${humidity}%`;
+			if (windEl) windEl.textContent = `🌬️ ${windSpeed}km/h`;
+
+			// 显示内容
+			loading?.classList.add('hidden');
+			content?.classList.remove('hidden');
+
+		} catch (err) {
+			console.warn('天气获取失败:', err);
+			loading?.classList.add('hidden');
+			error?.classList.remove('hidden');
+		}
+	}
+
+	// 延迟加载天气，避免阻塞页面
+	setTimeout(initWeather, 1000);
+
+	// Swup 支持
+	document.addEventListener('astro:page-load', () => {
+		setTimeout(initWeather, 1000);
+	});
+</script>

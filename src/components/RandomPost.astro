@@ -1,0 +1,116 @@
+---
+/**
+ * 随机文章按钮组件
+ * 点击随机跳转到一篇文章
+ */
+import { getCollection } from 'astro:content';
+
+// 获取所有已发布的文章
+const posts = await getCollection('posts', ({ data }) => {
+	return !data.draft;
+});
+
+// 生成文章列表（只包含 slug）
+const postSlugs = posts.map(post => post.slug);
+---
+
+<button id="random-post-btn" class="random-post-btn" title="随机漫游 🎲">
+	<span class="icon">🎲</span>
+	<span class="text">随机</span>
+</button>
+
+<script is:inline define:vars={{ postSlugs }}>
+	function initRandomPost() {
+		const btn = document.getElementById('random-post-btn');
+		if (!btn || !postSlugs || postSlugs.length === 0) return;
+
+		btn.addEventListener('click', () => {
+			// 获取当前页面的 slug
+			const currentPath = window.location.pathname;
+			const currentSlug = currentPath.split('/').filter(Boolean).pop();
+
+			// 过滤掉当前文章
+			let availableSlugs = postSlugs.filter(slug => slug !== currentSlug);
+			
+			// 如果只有一篇文章，就用原来的列表
+			if (availableSlugs.length === 0) {
+				availableSlugs = postSlugs;
+			}
+
+			// 随机选择
+			const randomSlug = availableSlugs[Math.floor(Math.random() * availableSlugs.length)];
+			
+			// 添加动画效果
+			btn.classList.add('spinning');
+			
+			// 延迟跳转，让动画有时间播放
+			setTimeout(() => {
+				window.location.href = `/my-blog/posts/${randomSlug}/`;
+			}, 300);
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initRandomPost);
+	} else {
+		initRandomPost();
+	}
+
+	// Swup 支持
+	document.addEventListener('astro:page-load', initRandomPost);
+</script>
+
+<style>
+	.random-post-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 14px;
+		border: none;
+		background: var(--btn-regular-bg);
+		color: var(--btn-content);
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 0.875rem;
+		font-weight: 500;
+		transition: all 0.3s ease;
+	}
+
+	.random-post-btn:hover {
+		background: var(--btn-regular-bg-hover);
+		transform: translateY(-1px);
+	}
+
+	.random-post-btn:active {
+		transform: translateY(0);
+	}
+
+	.random-post-btn .icon {
+		font-size: 1rem;
+		transition: transform 0.3s ease;
+	}
+
+	.random-post-btn.spinning .icon {
+		animation: spin 0.3s ease-out;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	/* 移动端隐藏文字 */
+	@media (max-width: 640px) {
+		.random-post-btn .text {
+			display: none;
+		}
+		
+		.random-post-btn {
+			padding: 8px 10px;
+		}
+	}
+</style>

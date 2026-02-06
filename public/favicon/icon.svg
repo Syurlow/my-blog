@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- 冰晶渐变 -->
+    <linearGradient id="ice-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8d8ea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5bb5e0;stop-opacity:1" />
+    </linearGradient>
+    <!-- 高光渐变 -->
+    <linearGradient id="highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+    <!-- 背景渐变 -->
+    <radialGradient id="bg-gradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </radialGradient>
+    <!-- 发光效果 -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- 圆形背景 -->
+  <circle cx="256" cy="256" r="250" fill="url(#bg-gradient)" stroke="url(#ice-gradient)" stroke-width="6"/>
+  
+  <!-- 雪花/冰晶图案 - 琪露诺 ❄️ -->
+  <g transform="translate(256, 256)" filter="url(#glow)">
+    <!-- 主要六边形冰晶 -->
+    <g fill="url(#ice-gradient)">
+      <!-- 中心六边形 -->
+      <polygon points="0,-40 35,-20 35,20 0,40 -35,20 -35,-20" opacity="0.9"/>
+      
+      <!-- 6个方向的冰晶臂 -->
+      <!-- 上 -->
+      <path d="M0,-40 L0,-140 L-15,-100 M0,-140 L15,-100" stroke="url(#ice-gradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="-140" r="12"/>
+      <path d="M-20,-90 L0,-70 L20,-90" stroke="url(#ice-gradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      
+      <!-- 右上 -->
+      <g transform="rotate(60)">
+        <path d="M0,-40 L0,-130 L-12,-95 M0,-130 L12,-95" stroke="url(#ice-gradient)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-130" r="10"/>
+        <path d="M-18,-85 L0,-68 L18,-85" stroke="url(#ice-gradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+      
+      <!-- 右下 -->
+      <g transform="rotate(120)">
+        <path d="M0,-40 L0,-140 L-15,-100 M0,-140 L15,-100" stroke="url(#ice-gradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-140" r="12"/>
+        <path d="M-20,-90 L0,-70 L20,-90" stroke="url(#ice-gradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </g>
+      
+      <!-- 下 -->
+      <g transform="rotate(180)">
+        <path d="M0,-40 L0,-130 L-12,-95 M0,-130 L12,-95" stroke="url(#ice-gradient)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-130" r="10"/>
+        <path d="M-18,-85 L0,-68 L18,-85" stroke="url(#ice-gradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+      
+      <!-- 左下 -->
+      <g transform="rotate(240)">
+        <path d="M0,-40 L0,-140 L-15,-100 M0,-140 L15,-100" stroke="url(#ice-gradient)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-140" r="12"/>
+        <path d="M-20,-90 L0,-70 L20,-90" stroke="url(#ice-gradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </g>
+      
+      <!-- 左上 -->
+      <g transform="rotate(300)">
+        <path d="M0,-40 L0,-130 L-12,-95 M0,-130 L12,-95" stroke="url(#ice-gradient)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="0" cy="-130" r="10"/>
+        <path d="M-18,-85 L0,-68 L18,-85" stroke="url(#ice-gradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+    
+    <!-- 中心装饰 - ⑨ 风格 -->
+    <circle cx="0" cy="0" r="25" fill="url(#highlight)" opacity="0.5"/>
+  </g>
+  
+  <!-- 装饰性小冰晶 -->
+  <g fill="#a8d8ea" opacity="0.6">
+    <circle cx="100" cy="120" r="6"/>
+    <circle cx="400" cy="150" r="8"/>
+    <circle cx="380" cy="380" r="5"/>
+    <circle cx="120" cy="400" r="7"/>
+    <circle cx="90" cy="300" r="4"/>
+    <circle cx="420" cy="280" r="6"/>
+  </g>
+</svg>

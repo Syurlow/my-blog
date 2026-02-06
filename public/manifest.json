@@ -1,0 +1,41 @@
+{
+	"name": "Syurlow's Blog",
+	"short_name": "Syurlow",
+	"description": "宇宙超级无敌大哥哥的个人博客",
+	"start_url": "/my-blog/",
+	"display": "standalone",
+	"background_color": "#1a1a2e",
+	"theme_color": "#87CEEB",
+	"orientation": "portrait-primary",
+	"scope": "/my-blog/",
+	"icons": [
+		{
+			"src": "/my-blog/favicon/icon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		},
+		{
+			"src": "/my-blog/favicon/favicon.ico",
+			"sizes": "48x48",
+			"type": "image/x-icon"
+		}
+	],
+	"categories": ["blog", "personal"],
+	"lang": "zh-CN",
+	"dir": "ltr",
+	"shortcuts": [
+		{
+			"name": "文章列表",
+			"short_name": "文章",
+			"url": "/my-blog/archive/",
+			"icons": []
+		},
+		{
+			"name": "足迹地图",
+			"short_name": "足迹",
+			"url": "/my-blog/map/",
+			"icons": []
+		}
+	]
+}

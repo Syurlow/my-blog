@@ -1,0 +1,327 @@
+---
+/**
+ * 访客足迹地图组件
+ * 显示访客来自哪些省份（中国地图热力图）
+ */
+---
+
+<div id="visitor-map-widget" class="visitor-map-widget card-base">
+	<div class="widget-header">
+		<span class="widget-title">🗺️ 访客足迹</span>
+		<span id="visitor-count" class="visitor-count">-- 位访客</span>
+	</div>
+	
+	<div class="map-container">
+		<svg id="china-map" class="china-map" viewBox="0 0 600 500"></svg>
+	</div>
+	
+	<div id="visitor-provinces" class="visitor-provinces">
+		<div class="loading">加载中...</div>
+	</div>
+	
+	<div class="current-visitor">
+		<span id="current-location">📍 检测中...</span>
+	</div>
+</div>
+
+<style>
+	.visitor-map-widget {
+		padding: 16px;
+		margin-bottom: 1rem;
+	}
+
+	.widget-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+	}
+
+	.widget-title {
+		font-weight: 600;
+		color: var(--text-color);
+	}
+
+	.visitor-count {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+
+	.map-container {
+		width: 100%;
+		aspect-ratio: 6/5;
+		background: var(--btn-plain-bg-hover);
+		border-radius: 8px;
+		overflow: hidden;
+		margin-bottom: 12px;
+	}
+
+	.china-map {
+		width: 100%;
+		height: 100%;
+	}
+
+	:global(.china-map .province) {
+		fill: var(--btn-regular-bg);
+		stroke: var(--line-divider);
+		stroke-width: 0.5;
+		transition: fill 0.3s ease;
+		cursor: pointer;
+	}
+
+	:global(.china-map .province:hover) {
+		opacity: 0.8;
+	}
+
+	:global(.china-map .province.visited) {
+		fill: oklch(0.7 0.12 var(--hue, 200));
+	}
+
+	:global(.china-map .province.hot) {
+		fill: oklch(0.6 0.15 var(--hue, 200));
+	}
+
+	:global(.china-map .province.current) {
+		fill: oklch(0.8 0.18 var(--hue, 200));
+		animation: pulse-province 2s infinite;
+	}
+
+	@keyframes pulse-province {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.6; }
+	}
+
+	.visitor-provinces {
+		max-height: 80px;
+		overflow-y: auto;
+		margin-bottom: 8px;
+	}
+
+	.visitor-provinces .loading {
+		text-align: center;
+		color: var(--text-muted);
+		font-size: 0.75rem;
+		padding: 8px;
+	}
+
+	.province-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.province-tag {
+		padding: 2px 8px;
+		background: var(--btn-regular-bg);
+		border-radius: 10px;
+		font-size: 0.7rem;
+		color: var(--text-muted);
+	}
+
+	.province-tag .count {
+		margin-left: 4px;
+		color: oklch(0.6 0.12 var(--hue, 200));
+		font-weight: 600;
+	}
+
+	.current-visitor {
+		text-align: center;
+		padding-top: 8px;
+		border-top: 1px dashed var(--line-divider);
+	}
+
+	#current-location {
+		font-size: 0.75rem;
+		color: var(--text-muted);
+	}
+</style>
+
+<script>
+	import { supabase, getVisitorLocation } from '../../utils/supabase';
+
+	// 简化的中国地图 SVG 路径（省份边界）
+	const chinaProvinces: Record<string, { path: string; center: [number, number] }> = {
+		'北京': { path: 'M395,bindEvents125 L405,120 L410,130 L400,135 Z', center: [400, 127] },
+		'天津': { path: 'M408,130 L418,128 L420,138 L410,140 Z', center: [414, 134] },
+		'河北': { path: 'M375,115 L420,110 L430,160 L380,170 L370,140 Z', center: [395, 140] },
+		'山西': { path: 'M355,130 L380,125 L385,180 L355,185 Z', center: [368, 155] },
+		'内蒙古': { path: 'M280,60 L450,50 L470,120 L380,130 L300,100 Z', center: [375, 85] },
+		'辽宁': { path: 'M430,90 L480,85 L490,130 L440,135 Z', center: [460, 110] },
+		'吉林': { path: 'M450,55 L510,50 L515,90 L455,95 Z', center: [480, 72] },
+		'黑龙江': { path: 'M460,10 L550,15 L545,60 L470,55 Z', center: [505, 35] },
+		'上海': { path: 'M450,220 L460,218 L462,228 L452,230 Z', center: [456, 224] },
+		'江苏': { path: 'M420,180 L460,175 L465,225 L425,230 Z', center: [442, 200] },
+		'浙江': { path: 'M440,230 L470,225 L475,275 L445,280 Z', center: [457, 252] },
+		'安徽': { path: 'M390,190 L430,185 L435,245 L395,250 Z', center: [412, 217] },
+		'福建': { path: 'M445,280 L480,275 L485,340 L450,345 Z', center: [465, 310] },
+		'江西': { path: 'M410,255 L450,250 L455,320 L415,325 Z', center: [432, 287] },
+		'山东': { path: 'M400,150 L455,145 L460,195 L405,200 Z', center: [430, 172] },
+		'河南': { path: 'M350,170 L400,165 L405,220 L355,225 Z', center: [377, 195] },
+		'湖北': { path: 'M340,220 L400,215 L405,265 L345,270 Z', center: [372, 242] },
+		'湖南': { path: 'M360,270 L410,265 L415,330 L365,335 Z', center: [387, 300] },
+		'广东': { path: 'M380,340 L450,335 L455,395 L385,400 Z', center: [417, 367] },
+		'广西': { path: 'M310,345 L380,340 L385,400 L315,405 Z', center: [347, 372] },
+		'海南': { path: 'M360,420 L390,418 L392,450 L362,452 Z', center: [376, 435] },
+		'重庆': { path: 'M295,255 L340,250 L345,290 L300,295 Z', center: [320, 272] },
+		'四川': { path: 'M210,230 L300,225 L305,310 L215,315 Z', center: [257, 270] },
+		'贵州': { path: 'M290,305 L355,300 L360,355 L295,360 Z', center: [325, 330] },
+		'云南': { path: 'M200,320 L290,315 L295,410 L205,415 Z', center: [247, 365] },
+		'西藏': { path: 'M50,200 L200,195 L205,320 L55,325 Z', center: [127, 260] },
+		'陕西': { path: 'M305,160 L355,155 L360,250 L310,255 Z', center: [332, 205] },
+		'甘肃': { path: 'M180,120 L310,115 L315,200 L185,205 Z', center: [247, 160] },
+		'青海': { path: 'M120,165 L220,160 L225,250 L125,255 Z', center: [172, 207] },
+		'宁夏': { path: 'M295,130 L325,128 L328,165 L298,167 Z', center: [311, 147] },
+		'新疆': { path: 'M30,50 L180,45 L185,200 L35,205 Z', center: [107, 125] },
+		'香港': { path: 'M432,385 L440,383 L442,390 L434,392 Z', center: [437, 387] },
+		'澳门': { path: 'M420,392 L428,390 L430,397 L422,399 Z', center: [425, 394] },
+		'台湾': { path: 'M490,300 L510,295 L515,360 L495,365 Z', center: [502, 330] },
+	};
+
+	interface VisitorStats {
+		province: string;
+		count: number;
+	}
+
+	class VisitorMapManager {
+		private svg: SVGElement | null;
+		private currentProvince: string | null = null;
+
+		constructor() {
+			this.svg = document.getElementById('china-map') as unknown as SVGElement;
+			this.init();
+		}
+
+		private async init() {
+			this.renderMap();
+			await this.recordVisitor();
+			await this.loadStats();
+		}
+
+		private renderMap() {
+			if (!this.svg) return;
+
+			for (const [name, data] of Object.entries(chinaProvinces)) {
+				const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				path.setAttribute('d', data.path);
+				path.setAttribute('class', 'province');
+				path.setAttribute('data-province', name);
+				path.setAttribute('title', name);
+				this.svg.appendChild(path);
+			}
+		}
+
+		private async recordVisitor() {
+			try {
+				const location = await getVisitorLocation();
+				if (!location) return;
+
+				this.currentProvince = location.province;
+				
+				// 更新当前位置显示
+				const locEl = document.getElementById('current-location');
+				if (locEl) {
+					locEl.textContent = `📍 你来自 ${location.province}${location.city ? ' · ' + location.city : ''}`;
+				}
+
+				// 高亮当前省份
+				const currentPath = this.svg?.querySelector(`[data-province="${location.province}"]`);
+				if (currentPath) {
+					currentPath.classList.add('current');
+				}
+
+				// 记录到 Supabase
+				const visitorId = this.getVisitorId();
+				await supabase.insert('visitors', {
+					visitor_id: visitorId,
+					province: location.province,
+					city: location.city,
+					country: location.country,
+				});
+
+			} catch (err) {
+				console.warn('记录访客失败:', err);
+				const locEl = document.getElementById('current-location');
+				if (locEl) locEl.textContent = '📍 未知位置';
+			}
+		}
+
+		private getVisitorId(): string {
+			let id = localStorage.getItem('visitor_id');
+			if (!id) {
+				id = 'v_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+				localStorage.setItem('visitor_id', id);
+			}
+			return id;
+		}
+
+		private async loadStats() {
+			try {
+				// 调用 Supabase RPC 获取统计
+				const stats = await supabase.rpc('get_visitor_stats');
+				
+				if (stats && Array.isArray(stats)) {
+					this.renderStats(stats);
+				}
+			} catch (err) {
+				console.warn('加载访客统计失败:', err);
+				// 显示空状态
+				const container = document.getElementById('visitor-provinces');
+				if (container) {
+					container.innerHTML = '<div class="province-list"><span class="province-tag">暂无数据</span></div>';
+				}
+			}
+		}
+
+		private renderStats(stats: VisitorStats[]) {
+			// 更新总访客数
+			const totalCount = stats.reduce((sum, s) => sum + s.count, 0);
+			const countEl = document.getElementById('visitor-count');
+			if (countEl) countEl.textContent = `${totalCount} 位访客`;
+
+			// 高亮有访客的省份
+			const maxCount = Math.max(...stats.map(s => s.count));
+			stats.forEach(stat => {
+				const path = this.svg?.querySelector(`[data-province="${stat.province}"]`);
+				if (path && stat.province !== this.currentProvince) {
+					if (stat.count >= maxCount * 0.5) {
+						path.classList.add('hot');
+					} else {
+						path.classList.add('visited');
+					}
+				}
+			});
+
+			// 渲染省份列表
+			const container = document.getElementById('visitor-provinces');
+			if (container) {
+				const sortedStats = stats.sort((a, b) => b.count - a.count).slice(0, 10);
+				container.innerHTML = `
+					<div class="province-list">
+						${sortedStats.map(s => `
+							<span class="province-tag">
+								${s.province}<span class="count">${s.count}</span>
+							</span>
+						`).join('')}
+					</div>
+				`;
+			}
+		}
+	}
+
+	// 初始化
+	function initVisitorMap() {
+		const widget = document.getElementById('visitor-map-widget');
+		if (!widget) return;
+		new VisitorMapManager();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initVisitorMap);
+	} else {
+		setTimeout(initVisitorMap, 1500);
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		setTimeout(initVisitorMap, 1500);
+	});
+</script>

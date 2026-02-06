@@ -2,7 +2,11 @@
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import MusicPlayer from "@components/widget/MusicPlayer.svelte";
 import Pio from "@components/widget/Pio.svelte";
-import Fumo from "@components/widget/Fumo.astro"; // 使用 Svelte 版本的 Pio 组件
+import Fumo from "@components/widget/Fumo.astro";
+import ReadingProgress from "@components/ReadingProgress.astro";
+import BackToTopProgress from "@components/BackToTopProgress.astro";
+import SearchShortcut from "@components/SearchShortcut.astro";
+import Danmaku from "@components/Danmaku.astro";
 import {
 	musicPlayerConfig,
 	pioConfig,
@@ -247,6 +251,13 @@ if (siteConfig.font) {
 		<meta name="twitter:description" content={description || pageTitle} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
+		
+		<!-- PWA 支持 -->
+		<link rel="manifest" href="/my-blog/manifest.json" />
+		<meta name="theme-color" content="#87CEEB" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Syurlow" />
 		{
 			favicons.map((favicon) => (
 				<link
@@ -424,8 +435,31 @@ if (siteConfig.font) {
 		<!-- Fumo 组件 -->
 		<Fumo />
 
+		<!-- 阅读进度条 -->
+		<ReadingProgress />
+
+		<!-- 返回顶部进度圆环 -->
+		<BackToTopProgress />
+
+		<!-- 搜索快捷键 -->
+		<SearchShortcut />
+
+		<!-- 弹幕评论 -->
+		<Danmaku />
+
 		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
+
+		<!-- PWA Service Worker 注册 -->
+		<script is:inline>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/my-blog/sw.js')
+						.then(reg => console.log('✅ SW registered:', reg.scope))
+						.catch(err => console.warn('❌ SW registration failed:', err));
+				});
+			}
+		</script>
 	</body>
 </html>
 

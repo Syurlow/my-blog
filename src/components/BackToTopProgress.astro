@@ -1,0 +1,161 @@
+---
+/**
+ * 返回顶部进度圆环组件
+ * 带有阅读进度的返回顶部按钮
+ */
+---
+
+<button id="back-to-top-progress" class="back-to-top-progress hide" aria-label="返回顶部">
+	<svg class="progress-ring" viewBox="0 0 44 44">
+		<circle class="progress-ring-bg" cx="22" cy="22" r="20" />
+		<circle class="progress-ring-fill" cx="22" cy="22" r="20" />
+	</svg>
+	<span class="arrow-icon">↑</span>
+</button>
+
+<style>
+	.back-to-top-progress {
+		position: fixed;
+		bottom: 2rem;
+		right: 2rem;
+		width: 48px;
+		height: 48px;
+		border: none;
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border-radius: 50%;
+		cursor: pointer;
+		z-index: 1000;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	:global(.dark) .back-to-top-progress {
+		background: rgba(30, 30, 30, 0.9);
+	}
+
+	.back-to-top-progress:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+	}
+
+	.back-to-top-progress:active {
+		transform: translateY(-1px);
+	}
+
+	.back-to-top-progress.hide {
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(20px);
+	}
+
+	.progress-ring {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		transform: rotate(-90deg);
+	}
+
+	.progress-ring-bg {
+		fill: none;
+		stroke: rgba(0, 0, 0, 0.1);
+		stroke-width: 3;
+	}
+
+	:global(.dark) .progress-ring-bg {
+		stroke: rgba(255, 255, 255, 0.1);
+	}
+
+	.progress-ring-fill {
+		fill: none;
+		stroke: oklch(0.7 0.14 var(--hue, 200));
+		stroke-width: 3;
+		stroke-linecap: round;
+		stroke-dasharray: 125.6; /* 2 * π * 20 */
+		stroke-dashoffset: 125.6;
+		transition: stroke-dashoffset 0.1s ease-out;
+	}
+
+	.arrow-icon {
+		font-size: 1.25rem;
+		color: oklch(0.5 0.1 var(--hue, 200));
+		font-weight: bold;
+		z-index: 1;
+	}
+
+	:global(.dark) .arrow-icon {
+		color: oklch(0.8 0.1 var(--hue, 200));
+	}
+
+	/* 移动端调整位置 */
+	@media (max-width: 768px) {
+		.back-to-top-progress {
+			bottom: 1.5rem;
+			right: 1rem;
+			width: 42px;
+			height: 42px;
+		}
+	}
+</style>
+
+<script>
+	function initBackToTopProgress() {
+		const button = document.getElementById('back-to-top-progress');
+		const progressFill = button?.querySelector('.progress-ring-fill') as SVGCircleElement;
+		
+		if (!button || !progressFill) return;
+
+		const circumference = 2 * Math.PI * 20; // r = 20
+		let ticking = false;
+
+		function updateProgress() {
+			const scrollTop = window.scrollY;
+			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+			
+			// 计算进度
+			const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+			const offset = circumference * (1 - progress);
+			progressFill.style.strokeDashoffset = String(offset);
+
+			// 滚动超过 300px 时显示按钮
+			if (scrollTop > 300) {
+				button.classList.remove('hide');
+			} else {
+				button.classList.add('hide');
+			}
+
+			ticking = false;
+		}
+
+		function onScroll() {
+			if (!ticking) {
+				requestAnimationFrame(updateProgress);
+				ticking = true;
+			}
+		}
+
+		// 点击返回顶部
+		button.addEventListener('click', () => {
+			window.scrollTo({
+				top: 0,
+				behavior: 'smooth'
+			});
+		});
+
+		window.addEventListener('scroll', onScroll, { passive: true });
+		updateProgress();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initBackToTopProgress);
+	} else {
+		initBackToTopProgress();
+	}
+
+	// Swup 支持
+	document.addEventListener('astro:page-load', initBackToTopProgress);
+</script>

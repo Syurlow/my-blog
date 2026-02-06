@@ -1,0 +1,135 @@
+---
+/**
+ * 阅读进度条组件
+ * 在页面顶部显示当前阅读进度
+ */
+---
+
+<div id="reading-progress-container" class="reading-progress-container">
+	<div id="reading-progress-bar" class="reading-progress-bar"></div>
+</div>
+
+<style>
+	.reading-progress-container {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 3px;
+		background: transparent;
+		z-index: 9999;
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+
+	.reading-progress-container.visible {
+		opacity: 1;
+	}
+
+	.reading-progress-bar {
+		height: 100%;
+		width: 0%;
+		background: linear-gradient(
+			90deg,
+			oklch(0.7 0.14 var(--hue, 200)),
+			oklch(0.8 0.18 var(--hue, 200))
+		);
+		box-shadow: 0 0 10px oklch(0.7 0.14 var(--hue, 200) / 0.5);
+		transition: width 0.1s ease-out;
+		border-radius: 0 2px 2px 0;
+	}
+
+	/* 添加冰晶光泽效果 ❄️ */
+	.reading-progress-bar::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.4) 50%,
+			transparent 100%
+		);
+		animation: shimmer 2s infinite;
+	}
+
+	@keyframes shimmer {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(100%);
+		}
+	}
+</style>
+
+<script>
+	function initReadingProgress() {
+		const container = document.getElementById('reading-progress-container');
+		const bar = document.getElementById('reading-progress-bar');
+		
+		if (!container || !bar) return;
+
+		// 只在文章页面显示
+		const isArticlePage = document.querySelector('article') || 
+							   document.querySelector('.prose') ||
+							   document.querySelector('#post-content');
+		
+		if (!isArticlePage) {
+			container.style.display = 'none';
+			return;
+		}
+
+		let ticking = false;
+
+		function updateProgress() {
+			const scrollTop = window.scrollY;
+			const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+			
+			if (docHeight <= 0) {
+				bar.style.width = '0%';
+				return;
+			}
+
+			const progress = Math.min((scrollTop / docHeight) * 100, 100);
+			bar.style.width = `${progress}%`;
+
+			// 滚动超过100px时显示进度条
+			if (scrollTop > 100) {
+				container.classList.add('visible');
+			} else {
+				container.classList.remove('visible');
+			}
+
+			ticking = false;
+		}
+
+		function onScroll() {
+			if (!ticking) {
+				requestAnimationFrame(updateProgress);
+				ticking = true;
+			}
+		}
+
+		window.addEventListener('scroll', onScroll, { passive: true });
+		updateProgress();
+
+		// Swup 页面切换后重新初始化
+		document.addEventListener('astro:page-load', () => {
+			setTimeout(updateProgress, 100);
+		});
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initReadingProgress);
+	} else {
+		initReadingProgress();
+	}
+
+	// Swup 支持
+	document.addEventListener('astro:page-load', initReadingProgress);
+</script>

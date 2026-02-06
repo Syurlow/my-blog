@@ -1,0 +1,155 @@
+---
+/**
+ * 搜索快捷键组件
+ * 按 / 或 Ctrl+K 快速打开搜索
+ */
+---
+
+<!-- 快捷键提示 -->
+<div id="search-shortcut-hint" class="search-shortcut-hint hidden">
+	<kbd>/</kbd> 搜索
+</div>
+
+<style>
+	.search-shortcut-hint {
+		position: fixed;
+		bottom: 2rem;
+		left: 50%;
+		transform: translateX(-50%);
+		background: rgba(0, 0, 0, 0.8);
+		color: white;
+		padding: 8px 16px;
+		border-radius: 8px;
+		font-size: 0.875rem;
+		z-index: 1000;
+		opacity: 0;
+		transition: opacity 0.3s ease;
+		pointer-events: none;
+	}
+
+	.search-shortcut-hint.visible {
+		opacity: 1;
+	}
+
+	.search-shortcut-hint.hidden {
+		display: none;
+	}
+
+	.search-shortcut-hint kbd {
+		background: rgba(255, 255, 255, 0.2);
+		padding: 2px 8px;
+		border-radius: 4px;
+		margin-right: 6px;
+		font-family: monospace;
+	}
+</style>
+
+<script>
+	function initSearchShortcut() {
+		let hintTimeout: ReturnType<typeof setTimeout> | null = null;
+
+		// 显示快捷键提示
+		function showHint() {
+			const hint = document.getElementById('search-shortcut-hint');
+			if (!hint) return;
+			
+			hint.classList.remove('hidden');
+			setTimeout(() => hint.classList.add('visible'), 10);
+			
+			// 3秒后自动隐藏
+			if (hintTimeout) clearTimeout(hintTimeout);
+			hintTimeout = setTimeout(() => {
+				hint.classList.remove('visible');
+				setTimeout(() => hint.classList.add('hidden'), 300);
+			}, 3000);
+		}
+
+		// 打开搜索
+		function openSearch() {
+			// 查找搜索按钮并点击
+			const searchBtn = document.getElementById('search-switch') ||
+							  document.querySelector('[data-search-trigger]') ||
+							  document.querySelector('.search-btn');
+			
+			if (searchBtn) {
+				(searchBtn as HTMLElement).click();
+				return true;
+			}
+
+			// 尝试直接显示搜索面板
+			const searchPanel = document.getElementById('search-panel');
+			if (searchPanel) {
+				searchPanel.classList.remove('hidden');
+				const input = searchPanel.querySelector('input');
+				if (input) (input as HTMLInputElement).focus();
+				return true;
+			}
+
+			return false;
+		}
+
+		// 监听键盘事件
+		document.addEventListener('keydown', (e) => {
+			// 忽略输入框中的按键
+			const target = e.target as HTMLElement;
+			if (target.tagName === 'INPUT' || 
+				target.tagName === 'TEXTAREA' || 
+				target.isContentEditable) {
+				return;
+			}
+
+			// / 键或 Ctrl+K 打开搜索
+			if (e.key === '/' || (e.ctrlKey && e.key === 'k')) {
+				e.preventDefault();
+				openSearch();
+			}
+
+			// Escape 关闭搜索
+			if (e.key === 'Escape') {
+				const searchPanel = document.getElementById('search-panel');
+				if (searchPanel && !searchPanel.classList.contains('hidden')) {
+					searchPanel.classList.add('hidden');
+				}
+			}
+
+			// G + H 快捷键：回到首页
+			if (e.key === 'h' && (window as any).__lastKey === 'g') {
+				e.preventDefault();
+				window.location.href = '/my-blog/';
+			}
+
+			// J/K 键：上下篇文章（仅在文章页面）
+			if (e.key === 'j' || e.key === 'k') {
+				const prevLink = document.querySelector('a[rel="prev"], .prev-post a');
+				const nextLink = document.querySelector('a[rel="next"], .next-post a');
+				
+				if (e.key === 'j' && nextLink) {
+					(nextLink as HTMLAnchorElement).click();
+				} else if (e.key === 'k' && prevLink) {
+					(prevLink as HTMLAnchorElement).click();
+				}
+			}
+
+			// 记录上一个按键（用于组合快捷键）
+			(window as any).__lastKey = e.key;
+			setTimeout(() => {
+				(window as any).__lastKey = null;
+			}, 500);
+		});
+
+		// 首次加载显示提示（仅首页）
+		if (window.location.pathname === '/my-blog/' || window.location.pathname === '/my-blog') {
+			const hasShownHint = sessionStorage.getItem('searchHintShown');
+			if (!hasShownHint) {
+				setTimeout(showHint, 2000);
+				sessionStorage.setItem('searchHintShown', 'true');
+			}
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initSearchShortcut);
+	} else {
+		initSearchShortcut();
+	}
+</script>

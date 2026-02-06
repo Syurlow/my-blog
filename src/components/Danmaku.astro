@@ -1,0 +1,420 @@
+---
+/**
+ * 弹幕评论组件
+ * B站风格的弹幕系统，需要填写昵称才能发送
+ */
+---
+
+<div id="danmaku-container" class="danmaku-container">
+	<!-- 弹幕画布 -->
+	<div id="danmaku-screen" class="danmaku-screen"></div>
+	
+	<!-- 弹幕控制栏 -->
+	<div class="danmaku-controls">
+		<button id="danmaku-toggle" class="danmaku-btn toggle-btn" title="开关弹幕">
+			<span class="on">💬</span>
+			<span class="off hidden">🔇</span>
+		</button>
+		
+		<div class="danmaku-input-group">
+			<input 
+				type="text" 
+				id="danmaku-nickname" 
+				class="danmaku-input nickname-input"
+				placeholder="昵称"
+				maxlength="10"
+			/>
+			<input 
+				type="text" 
+				id="danmaku-input" 
+				class="danmaku-input message-input"
+				placeholder="发个弹幕呗~"
+				maxlength="50"
+			/>
+			<button id="danmaku-send" class="danmaku-btn send-btn">发送</button>
+		</div>
+		
+		<span class="danmaku-count">
+			<span id="danmaku-count-num">0</span> 条弹幕
+		</span>
+	</div>
+</div>
+
+<style>
+	.danmaku-container {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 500;
+	}
+
+	.danmaku-screen {
+		position: absolute;
+		top: 60px;
+		left: 0;
+		width: 100%;
+		height: calc(100% - 120px);
+		overflow: hidden;
+	}
+
+	.danmaku-controls {
+		position: fixed;
+		bottom: 80px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 16px;
+		background: rgba(0, 0, 0, 0.7);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border-radius: 25px;
+		pointer-events: auto;
+		transition: opacity 0.3s ease;
+	}
+
+	.danmaku-controls:hover {
+		opacity: 1 !important;
+	}
+
+	.danmaku-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 6px 10px;
+		border-radius: 15px;
+		transition: all 0.2s ease;
+		font-size: 1rem;
+	}
+
+	.toggle-btn {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.toggle-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.toggle-btn .off.hidden,
+	.toggle-btn.off .on {
+		display: none;
+	}
+
+	.toggle-btn.off .off {
+		display: inline;
+	}
+
+	.danmaku-input-group {
+		display: flex;
+		gap: 6px;
+	}
+
+	.danmaku-input {
+		border: none;
+		background: rgba(255, 255, 255, 0.15);
+		color: white;
+		padding: 6px 12px;
+		border-radius: 15px;
+		font-size: 0.875rem;
+		outline: none;
+		transition: background 0.2s ease;
+	}
+
+	.danmaku-input::placeholder {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.danmaku-input:focus {
+		background: rgba(255, 255, 255, 0.25);
+	}
+
+	.nickname-input {
+		width: 80px;
+	}
+
+	.message-input {
+		width: 180px;
+	}
+
+	.send-btn {
+		background: oklch(0.7 0.14 var(--hue, 200));
+		color: white;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+
+	.send-btn:hover {
+		background: oklch(0.6 0.14 var(--hue, 200));
+	}
+
+	.danmaku-count {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+
+	/* 弹幕样式 */
+	:global(.danmaku-item) {
+		position: absolute;
+		white-space: nowrap;
+		font-size: 1.1rem;
+		font-weight: 500;
+		color: white;
+		text-shadow: 
+			1px 1px 2px rgba(0, 0, 0, 0.8),
+			-1px -1px 2px rgba(0, 0, 0, 0.8);
+		animation: danmaku-fly linear forwards;
+		pointer-events: none;
+		z-index: 501;
+	}
+
+	:global(.danmaku-item .nickname) {
+		color: oklch(0.8 0.15 var(--hue, 200));
+		font-size: 0.9em;
+		margin-right: 6px;
+	}
+
+	@keyframes danmaku-fly {
+		from {
+			transform: translateX(100vw);
+		}
+		to {
+			transform: translateX(-100%);
+		}
+	}
+
+	/* 移动端适配 */
+	@media (max-width: 768px) {
+		.danmaku-controls {
+			bottom: 100px;
+			padding: 6px 12px;
+			gap: 6px;
+		}
+
+		.nickname-input {
+			width: 60px;
+		}
+
+		.message-input {
+			width: 120px;
+		}
+
+		.danmaku-count {
+			display: none;
+		}
+	}
+</style>
+
+<script>
+	import { supabase } from '../utils/supabase';
+
+	interface DanmakuItem {
+		id: string;
+		nickname: string;
+		content: string;
+		color?: string;
+		created_at: string;
+		page_path: string;
+	}
+
+	class DanmakuManager {
+		private screen: HTMLElement | null;
+		private isEnabled = true;
+		private danmakuList: DanmakuItem[] = [];
+		private tracks: boolean[] = [];
+		private trackCount = 8;
+		private pagePath: string;
+
+		constructor() {
+			this.screen = document.getElementById('danmaku-screen');
+			this.pagePath = window.location.pathname;
+			this.initTracks();
+			this.bindEvents();
+			this.loadDanmaku();
+			this.restoreNickname();
+		}
+
+		private initTracks() {
+			this.tracks = new Array(this.trackCount).fill(false);
+		}
+
+		private getAvailableTrack(): number {
+			for (let i = 0; i < this.tracks.length; i++) {
+				if (!this.tracks[i]) {
+					return i;
+				}
+			}
+			// 如果没有空闲轨道，随机选一个
+			return Math.floor(Math.random() * this.trackCount);
+		}
+
+		private restoreNickname() {
+			const saved = localStorage.getItem('danmaku_nickname');
+			if (saved) {
+				const input = document.getElementById('danmaku-nickname') as HTMLInputElement;
+				if (input) input.value = saved;
+			}
+		}
+
+		private bindEvents() {
+			// 开关弹幕
+			const toggleBtn = document.getElementById('danmaku-toggle');
+			toggleBtn?.addEventListener('click', () => {
+				this.isEnabled = !this.isEnabled;
+				toggleBtn.classList.toggle('off', !this.isEnabled);
+				if (this.screen) {
+					this.screen.style.display = this.isEnabled ? 'block' : 'none';
+				}
+			});
+
+			// 发送弹幕
+			const sendBtn = document.getElementById('danmaku-send');
+			const nicknameInput = document.getElementById('danmaku-nickname') as HTMLInputElement;
+			const messageInput = document.getElementById('danmaku-input') as HTMLInputElement;
+
+			const sendDanmaku = async () => {
+				const nickname = nicknameInput?.value.trim();
+				const content = messageInput?.value.trim();
+
+				if (!nickname) {
+					nicknameInput?.focus();
+					nicknameInput?.classList.add('shake');
+					setTimeout(() => nicknameInput?.classList.remove('shake'), 500);
+					return;
+				}
+
+				if (!content) {
+					messageInput?.focus();
+					return;
+				}
+
+				// 保存昵称
+				localStorage.setItem('danmaku_nickname', nickname);
+
+				// 立即显示弹幕
+				this.showDanmaku({ nickname, content });
+
+				// 清空输入
+				if (messageInput) messageInput.value = '';
+
+				// 保存到 Supabase
+				try {
+					await supabase.insert('danmaku', {
+						nickname,
+						content,
+						page_path: this.pagePath,
+					});
+				} catch (err) {
+					console.warn('保存弹幕失败:', err);
+				}
+			};
+
+			sendBtn?.addEventListener('click', sendDanmaku);
+			messageInput?.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') sendDanmaku();
+			});
+		}
+
+		private async loadDanmaku() {
+			try {
+				// 获取当前页面的弹幕
+				const data = await supabase.select(
+					'danmaku',
+					`page_path=eq.${encodeURIComponent(this.pagePath)}&order=created_at.desc&limit=100`
+				);
+
+				if (data && Array.isArray(data)) {
+					this.danmakuList = data;
+					this.updateCount();
+					
+					// 延迟播放历史弹幕
+					this.playHistoryDanmaku();
+				}
+			} catch (err) {
+				console.warn('加载弹幕失败:', err);
+			}
+		}
+
+		private playHistoryDanmaku() {
+			if (this.danmakuList.length === 0) return;
+
+			// 随机打乱顺序
+			const shuffled = [...this.danmakuList].sort(() => Math.random() - 0.5);
+			
+			// 每隔一段时间显示一条
+			shuffled.forEach((item, index) => {
+				setTimeout(() => {
+					if (this.isEnabled) {
+						this.showDanmaku(item);
+					}
+				}, index * 2000 + Math.random() * 1000);
+			});
+		}
+
+		private showDanmaku(item: { nickname: string; content: string; color?: string }) {
+			if (!this.screen || !this.isEnabled) return;
+
+			const el = document.createElement('div');
+			el.className = 'danmaku-item';
+			el.innerHTML = `<span class="nickname">${item.nickname}:</span>${item.content}`;
+
+			// 获取轨道
+			const track = this.getAvailableTrack();
+			const trackHeight = this.screen.clientHeight / this.trackCount;
+			el.style.top = `${track * trackHeight + 10}px`;
+
+			// 动画时长（根据内容长度）
+			const duration = 8 + Math.random() * 4;
+			el.style.animationDuration = `${duration}s`;
+
+			// 标记轨道占用
+			this.tracks[track] = true;
+			setTimeout(() => {
+				this.tracks[track] = false;
+			}, 3000); // 3秒后释放轨道
+
+			this.screen.appendChild(el);
+
+			// 动画结束后移除
+			el.addEventListener('animationend', () => {
+				el.remove();
+			});
+		}
+
+		private updateCount() {
+			const countEl = document.getElementById('danmaku-count-num');
+			if (countEl) {
+				countEl.textContent = String(this.danmakuList.length);
+			}
+		}
+	}
+
+	// 初始化
+	function initDanmaku() {
+		// 只在文章页面启用弹幕
+		const isArticlePage = document.querySelector('article') || 
+							   document.querySelector('.prose');
+		
+		const container = document.getElementById('danmaku-container');
+		if (!isArticlePage && container) {
+			container.style.display = 'none';
+			return;
+		}
+
+		new DanmakuManager();
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', initDanmaku);
+	} else {
+		setTimeout(initDanmaku, 500);
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		setTimeout(initDanmaku, 500);
+	});
+</script>
