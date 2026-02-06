@@ -3,9 +3,11 @@
  * 天气小组件
  * 显示访客当前位置的天气信息
  */
+import WidgetLayout from './WidgetLayout.astro';
 ---
 
-<div id="weather-widget" class="weather-widget card-base">
+<WidgetLayout name="天气" id="weather-widget-wrapper">
+<div id="weather-widget" class="weather-widget">
 	<div class="weather-loading">
 		<span class="loading-icon">🌤️</span>
 		<span class="loading-text">获取天气中...</span>
@@ -28,11 +30,11 @@
 		<span>😅 获取天气失败</span>
 	</div>
 </div>
+</WidgetLayout>
 
 <style>
 	.weather-widget {
-		padding: 16px;
-		margin-bottom: 1rem;
+		padding: 8px 0;
 	}
 
 	.weather-loading {

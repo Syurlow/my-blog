@@ -1,28 +1,40 @@
 ---
 /**
- * 随机文章按钮组件
- * 点击随机跳转到一篇文章
+ * 随机文章组件
+ * 侧边栏卡片样式，点击随机跳转到一篇文章
  */
 import { getCollection } from 'astro:content';
+import WidgetLayout from './widget/WidgetLayout.astro';
 
 // 获取所有已发布的文章
 const posts = await getCollection('posts', ({ data }) => {
 	return !data.draft;
 });
 
-// 生成文章列表（只包含 slug）
-const postSlugs = posts.map(post => post.slug);
+// 生成文章列表（包含 slug 和标题）
+const postList = posts.map(post => ({
+	slug: post.slug,
+	title: post.data.title
+}));
 ---
 
-<button id="random-post-btn" class="random-post-btn" title="随机漫游 🎲">
-	<span class="icon">🎲</span>
-	<span class="text">随机</span>
-</button>
+<WidgetLayout name="随机漫游" id="random-post-widget" style="margin-bottom: 1rem;">
+	<div class="random-post-container">
+		<div class="random-post-preview" id="random-post-preview">
+			<span class="preview-text">点击按钮探索随机文章 ❄️</span>
+		</div>
+		<button id="random-post-btn" class="random-post-btn" title="随机漫游 🎲">
+			<span class="icon">🎲</span>
+			<span class="text">随机一篇</span>
+		</button>
+	</div>
+</WidgetLayout>
 
-<script is:inline define:vars={{ postSlugs }}>
+<script is:inline define:vars={{ postList }}>
 	function initRandomPost() {
 		const btn = document.getElementById('random-post-btn');
-		if (!btn || !postSlugs || postSlugs.length === 0) return;
+		const preview = document.getElementById('random-post-preview');
+		if (!btn || !postList || postList.length === 0) return;
 
 		btn.addEventListener('click', () => {
 			// 获取当前页面的 slug
@@ -30,23 +42,25 @@ const postSlugs = posts.map(post => post.slug);
 			const currentSlug = currentPath.split('/').filter(Boolean).pop();
 
 			// 过滤掉当前文章
-			let availableSlugs = postSlugs.filter(slug => slug !== currentSlug);
+			let availablePosts = postList.filter(post => post.slug !== currentSlug);
 			
 			// 如果只有一篇文章，就用原来的列表
-			if (availableSlugs.length === 0) {
-				availableSlugs = postSlugs;
+			if (availablePosts.length === 0) {
+				availablePosts = postList;
 			}
 
 			// 随机选择
-			const randomSlug = availableSlugs[Math.floor(Math.random() * availableSlugs.length)];
+			const randomPost = availablePosts[Math.floor(Math.random() * availablePosts.length)];
+			
+			// 显示预览
+			if (preview) {
+				preview.innerHTML = `<a href="/my-blog/posts/${randomPost.slug}/" class="preview-link">${randomPost.title}</a>`;
+				preview.classList.add('show-preview');
+			}
 			
 			// 添加动画效果
 			btn.classList.add('spinning');
-			
-			// 延迟跳转，让动画有时间播放
-			setTimeout(() => {
-				window.location.href = `/my-blog/posts/${randomSlug}/`;
-			}, 300);
+			setTimeout(() => btn.classList.remove('spinning'), 500);
 		});
 	}
 
@@ -61,24 +75,70 @@ const postSlugs = posts.map(post => post.slug);
 </script>
 
 <style>
-	.random-post-btn {
-		display: inline-flex;
+	.random-post-container {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 8px 0;
+	}
+
+	.random-post-preview {
+		min-height: 40px;
+		display: flex;
 		align-items: center;
-		gap: 6px;
-		padding: 8px 14px;
+		justify-content: center;
+		padding: 8px 12px;
+		background: var(--card-bg);
+		border-radius: 8px;
+		transition: all 0.3s ease;
+	}
+
+	.random-post-preview .preview-text {
+		color: var(--text-secondary);
+		font-size: 0.875rem;
+		text-align: center;
+	}
+
+	.random-post-preview :global(.preview-link) {
+		color: oklch(0.7 0.14 var(--hue, 200));
+		text-decoration: none;
+		font-weight: 500;
+		transition: color 0.2s ease;
+		text-align: center;
+		display: block;
+	}
+
+	.random-post-preview :global(.preview-link:hover) {
+		color: oklch(0.8 0.16 var(--hue, 200));
+		text-decoration: underline;
+	}
+
+	.random-post-preview.show-preview {
+		background: oklch(0.3 0.05 var(--hue, 200) / 0.2);
+		border: 1px solid oklch(0.6 0.1 var(--hue, 200) / 0.3);
+	}
+
+	.random-post-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: 100%;
+		padding: 10px 16px;
 		border: none;
-		background: var(--btn-regular-bg);
-		color: var(--btn-content);
+		background: oklch(0.5 0.12 var(--hue, 200));
+		color: white;
 		border-radius: 8px;
 		cursor: pointer;
-		font-size: 0.875rem;
+		font-size: 0.9rem;
 		font-weight: 500;
 		transition: all 0.3s ease;
 	}
 
 	.random-post-btn:hover {
-		background: var(--btn-regular-bg-hover);
+		background: oklch(0.55 0.14 var(--hue, 200));
 		transform: translateY(-1px);
+		box-shadow: 0 4px 12px oklch(0.5 0.12 var(--hue, 200) / 0.3);
 	}
 
 	.random-post-btn:active {
@@ -86,12 +146,12 @@ const postSlugs = posts.map(post => post.slug);
 	}
 
 	.random-post-btn .icon {
-		font-size: 1rem;
-		transition: transform 0.3s ease;
+		font-size: 1.1rem;
+		transition: transform 0.5s ease;
 	}
 
 	.random-post-btn.spinning .icon {
-		animation: spin 0.3s ease-out;
+		animation: spin 0.5s ease-out;
 	}
 
 	@keyframes spin {
@@ -99,18 +159,7 @@ const postSlugs = posts.map(post => post.slug);
 			transform: rotate(0deg);
 		}
 		100% {
-			transform: rotate(360deg);
-		}
-	}
-
-	/* 移动端隐藏文字 */
-	@media (max-width: 640px) {
-		.random-post-btn .text {
-			display: none;
-		}
-		
-		.random-post-btn {
-			padding: 8px 10px;
+			transform: rotate(720deg);
 		}
 	}
 </style>

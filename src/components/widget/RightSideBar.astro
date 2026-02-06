@@ -2,6 +2,9 @@
 import { sidebarLayoutConfig } from "../../config";
 import Calendar from "./Calendar.astro";
 import SiteStats from "./SiteStats.astro";
+import RandomPost from "../RandomPost.astro";
+import Weather from "./Weather.astro";
+import VisitorMap from "./VisitorMap.astro";
 
 // 获取右侧栏组件配置
 const rightSidebarComponents = sidebarLayoutConfig.components.filter(
@@ -29,8 +32,11 @@ const stickyComponents = rightSidebarComponents.filter(
     {topComponents.map((component, _index) => (
       <div class={`sidebar-component ${component.class || ''}`} 
            style={`animation-delay: ${component.animationDelay || 0}ms; ${component.style || ''}`}>
-        {component.type === "site-stats" && <SiteStats />}
+                {component.type === "site-stats" && <SiteStats />}
         {component.type === "calendar" && <Calendar />}
+        {component.type === "random-post" && <RandomPost />}
+        {component.type === "weather" && <Weather />}
+        {component.type === "visitor-map" && <VisitorMap />}
       </div>
     ))}
   </div>
@@ -42,6 +48,9 @@ const stickyComponents = rightSidebarComponents.filter(
            style={`animation-delay: ${component.animationDelay || 0}ms; ${component.style || ''}`}>
         {component.type === "site-stats" && <SiteStats />}
         {component.type === "calendar" && <Calendar />}
+        {component.type === "random-post" && <RandomPost />}
+        {component.type === "weather" && <Weather />}
+        {component.type === "visitor-map" && <VisitorMap />}
       </div>
     ))}
   </div>

@@ -6,11 +6,11 @@
 const CACHE_NAME = 'syurlow-blog-v1';
 const OFFLINE_URL = '/my-blog/';
 
-// 需要缓存的资源
+// 需要缓存的资源（相对于 scope）
 const PRECACHE_URLS = [
-	'/my-blog/',
-	'/my-blog/manifest.json',
-	'/my-blog/favicon/favicon.ico',
+	'./',
+	'./manifest.json',
+	'./favicon/favicon.ico',
 ];
 
 // 安装事件 - 预缓存关键资源

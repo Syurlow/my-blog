@@ -623,6 +623,54 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 动画延迟时间
 			animationDelay: 250,
 		},
+		{
+			// 组件类型：随机文章组件
+			type: "random-post",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 7,
+			// 组件位置
+			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 300,
+		},
+		{
+			// 组件类型：天气组件
+			type: "weather",
+			// 是否启用该组件（使用免费 wttr.in API）
+			enable: true,
+			// 组件显示顺序
+			order: 8,
+			// 组件位置
+			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 350,
+		},
+		{
+			// 组件类型：访客地图组件（Supabase 已配置）
+			type: "visitor-map",
+			// 是否启用该组件
+			enable: true,
+			// 组件显示顺序
+			order: 9,
+			// 组件位置
+			position: "top",
+			// 所在侧边栏
+			sidebar: "right",
+			// CSS 类名
+			class: "onload-animation",
+			// 动画延迟时间
+			animationDelay: 400,
+		},
 	],
 
 	// 默认动画配置

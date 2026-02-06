@@ -18,6 +18,9 @@ export const WIDGET_COMPONENT_MAP = {
 	pio: "../components/widget/Pio.astro", // 添加 Pio 组件映射
 	"site-stats": "../components/widget/SiteStats.astro", // 站点统计组件
 	calendar: "../components/widget/Calendar.astro", // 日历组件
+	"random-post": "../components/RandomPost.astro", // 随机文章组件
+	weather: "../components/widget/Weather.astro", // 天气组件
+	"visitor-map": "../components/widget/VisitorMap.astro", // 访客地图组件
 	custom: null, // 自定义组件需要在配置中指定路径
 } as const;
 
