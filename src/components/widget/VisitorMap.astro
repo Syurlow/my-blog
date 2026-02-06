@@ -21,6 +21,7 @@
 	
 	<div class="current-visitor">
 		<span id="current-location">📍 检测中...</span>
+		<span id="location-method" class="location-method"></span>
 	</div>
 </div>
 
@@ -134,6 +135,22 @@
 		font-size: 0.75rem;
 		color: var(--text-muted);
 	}
+
+	.location-method {
+		display: block;
+		font-size: 0.65rem;
+		color: var(--text-muted);
+		opacity: 0.7;
+		margin-top: 2px;
+	}
+
+	.location-method.gps {
+		color: oklch(0.6 0.15 150); /* 绿色表示精准定位 */
+	}
+
+	.location-method.ip {
+		color: oklch(0.6 0.12 60); /* 橙色表示IP定位 */
+	}
 </style>
 
 <script>
@@ -219,8 +236,21 @@
 				
 				// 更新当前位置显示
 				const locEl = document.getElementById('current-location');
+				const methodEl = document.getElementById('location-method');
+				
 				if (locEl) {
 					locEl.textContent = `📍 你来自 ${location.province}${location.city ? ' · ' + location.city : ''}`;
+				}
+				
+				// 显示定位方式
+				if (methodEl && location.method) {
+					if (location.method === 'gps') {
+						methodEl.textContent = '🛰️ GPS精准定位';
+						methodEl.className = 'location-method gps';
+					} else {
+						methodEl.textContent = '🌐 IP估算位置';
+						methodEl.className = 'location-method ip';
+					}
 				}
 
 				// 高亮当前省份
