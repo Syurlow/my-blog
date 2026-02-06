@@ -395,16 +395,38 @@
 
 	// 初始化
 	function initDanmaku() {
-		// 只在文章页面启用弹幕
-		const isArticlePage = document.querySelector('article') || 
-							   document.querySelector('.prose');
-		
 		const container = document.getElementById('danmaku-container');
-		if (!isArticlePage && container) {
+		if (!container) return;
+
+		// 检查是否应该显示弹幕的页面
+		const pathname = window.location.pathname;
+		
+		// 允许弹幕的页面：主页、足迹地图、日记、文章页面
+		const allowedPaths = [
+			'/my-blog/',           // 主页
+			'/my-blog',            // 主页（无尾斜杠）
+			'/my-blog/map',        // 足迹地图
+			'/my-blog/map/',       // 足迹地图
+			'/my-blog/diary',      // 日记
+			'/my-blog/diary/',     // 日记
+		];
+		
+		// 检查是否为文章页面
+		const isArticlePage = document.querySelector('article') || 
+							   document.querySelector('.prose') ||
+							   pathname.includes('/posts/');
+		
+		// 检查是否在允许的页面列表中
+		const isAllowedPage = allowedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+		
+		// 如果既不是文章页面也不在允许列表中，则隐藏弹幕
+		if (!isArticlePage && !isAllowedPage) {
 			container.style.display = 'none';
 			return;
 		}
 
+		// 显示弹幕容器
+		container.style.display = '';
 		new DanmakuManager();
 	}
 
