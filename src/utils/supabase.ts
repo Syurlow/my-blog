@@ -159,6 +159,13 @@ export async function getVisitorLocation(): Promise<{
 	ip: string;
 	method: 'gps' | 'ip';
 } | null> {
+	// 先检查是否有缓存的定位结果（避免重复定位）
+	const cached = (window as any).__cachedLocation;
+	if (cached && Date.now() - cached.timestamp < 300000) { // 5分钟缓存
+		console.log('📍 使用缓存的定位结果:', cached.data);
+		return cached.data;
+	}
+
 	// 方案1：尝试使用浏览器 Geolocation API（最准确）
 	try {
 		const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -169,8 +176,8 @@ export async function getVisitorLocation(): Promise<{
 			
 			navigator.geolocation.getCurrentPosition(resolve, reject, {
 				enableHighAccuracy: false, // 不需要高精度，省电
-				timeout: 8000,
-				maximumAge: 300000, // 缓存5分钟
+				timeout: 15000, // 增加到15秒
+				maximumAge: 600000, // 缓存10分钟
 			});
 		});
 		
@@ -178,43 +185,44 @@ export async function getVisitorLocation(): Promise<{
 		const locationData = await getProvinceFromCoords(latitude, longitude);
 		
 		if (locationData) {
-			console.log('📍 使用浏览器定位成功:', locationData);
-			return {
+			const result = {
 				...locationData,
 				ip: '',
-				method: 'gps',
+				method: 'gps' as const,
 			};
+			console.log('📍 使用浏览器定位成功:', result);
+			// 缓存结果
+			(window as any).__cachedLocation = { data: result, timestamp: Date.now() };
+			return result;
 		}
 	} catch (geoError) {
 		console.log('📍 浏览器定位失败，尝试 IP 定位:', geoError);
 	}
 	
-	// 方案2：使用 IP 定位作为回退
+	// 方案2：使用 ipwho.is（免费，支持HTTPS和CORS，对国内IP较准确）
 	try {
-		// 尝试使用国内更准确的 IP 定位服务
-		const response = await fetch('https://whois.pconline.com.cn/ipJson.jsp?json=true', {
+		const response = await fetch('https://ipwho.is/?lang=zh-CN', {
 			signal: AbortSignal.timeout(5000),
 		});
 		
 		if (response.ok) {
-			const text = await response.text();
-			// 处理可能的 JSONP 或编码问题
-			const jsonStr = text.replace(/^\s*\w+\s*\(|\)\s*;?\s*$/g, '');
-			const data = JSON.parse(jsonStr);
-			
-			if (data.pro) {
-				console.log('📍 使用太平洋IP定位成功:', data);
-				return {
-					province: data.pro.replace(/(省|自治区|特别行政区|市)$/g, ''),
+			const data = await response.json();
+			if (data.success !== false) {
+				const result = {
+					province: (data.region || '').replace(/(省|自治区|特别行政区|市)$/g, ''),
 					city: data.city || '',
-					country: 'China',
+					country: data.country || 'China',
 					ip: data.ip || '',
-					method: 'ip',
+					method: 'ip' as const,
 				};
+				console.log('📍 使用 ipwho.is 定位成功:', result);
+				// 缓存结果
+				(window as any).__cachedLocation = { data: result, timestamp: Date.now() };
+				return result;
 			}
 		}
 	} catch (e) {
-		console.warn('太平洋IP定位失败:', e);
+		console.warn('ipwho.is 定位失败:', e);
 	}
 	
 	// 方案3：使用 ipapi.co 作为最后回退
@@ -226,15 +234,17 @@ export async function getVisitorLocation(): Promise<{
 		if (!response.ok) throw new Error('Failed to get location');
 		
 		const data = await response.json();
-		console.log('📍 使用 ipapi.co 定位:', data);
-		
-		return {
+		const result = {
 			province: data.region || '未知',
 			city: data.city || '未知',
 			country: data.country_name || '未知',
 			ip: data.ip || '',
-			method: 'ip',
+			method: 'ip' as const,
 		};
+		console.log('📍 使用 ipapi.co 定位:', result);
+		// 缓存结果
+		(window as any).__cachedLocation = { data: result, timestamp: Date.now() };
+		return result;
 	} catch (error) {
 		console.warn('获取访客位置失败:', error);
 		return null;
