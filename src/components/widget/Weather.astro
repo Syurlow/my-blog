@@ -27,7 +27,7 @@ import WidgetLayout from './WidgetLayout.astro';
 		</div>
 	</div>
 	<div class="weather-error hidden">
-		<span>😅 获取天气失败</span>
+		<button id="weather-retry" class="weather-retry-btn">点击重新获取</button>
 	</div>
 </div>
 </WidgetLayout>
@@ -121,9 +121,23 @@ import WidgetLayout from './WidgetLayout.astro';
 
 	.weather-error {
 		text-align: center;
-		color: var(--text-muted);
+		padding: 12px 0;
+	}
+
+	.weather-retry-btn {
+		padding: 10px 20px;
+		background: oklch(0.5 0.1 var(--hue, 200));
+		border: none;
+		border-radius: 8px;
+		color: white;
 		font-size: 0.875rem;
-		padding: 8px 0;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.weather-retry-btn:hover {
+		background: oklch(0.55 0.12 var(--hue, 200));
+		transform: translateY(-1px);
 	}
 </style>
 
@@ -201,6 +215,25 @@ import WidgetLayout from './WidgetLayout.astro';
 		return response.json();
 	}
 
+	// 等待定位缓存可用（最多等待10秒）
+	async function waitForLocationCache(maxWait = 10000): Promise<any> {
+		const startTime = Date.now();
+		
+		while (Date.now() - startTime < maxWait) {
+			const cached = (window as any).__cachedLocation;
+			if (cached && cached.data) {
+				console.log('🌤️ 使用访客地图的定位缓存');
+				return cached.data;
+			}
+			// 等待500ms后再检查
+			await new Promise(resolve => setTimeout(resolve, 500));
+		}
+		
+		// 超时后自己获取定位
+		console.log('🌤️ 定位缓存超时，自行获取定位');
+		return await getVisitorLocation();
+	}
+
 	async function initWeather() {
 		const widget = document.getElementById('weather-widget');
 		if (!widget) return;
@@ -210,8 +243,8 @@ import WidgetLayout from './WidgetLayout.astro';
 		const error = widget.querySelector('.weather-error');
 
 		try {
-			// 使用与访客地图相同的定位方法
-			const location = await getVisitorLocation();
+			// 等待访客地图的定位结果（共享定位数据）
+			const location = await waitForLocationCache();
 			if (!location) throw new Error('Location failed');
 
 			console.log('🌤️ 天气定位:', location);
@@ -262,11 +295,37 @@ import WidgetLayout from './WidgetLayout.astro';
 		}
 	}
 
-	// 延迟加载天气，等待定位完成
-	setTimeout(initWeather, 2000);
+	// 绑定重试按钮事件
+	function bindRetryButton() {
+		const retryBtn = document.getElementById('weather-retry');
+		if (retryBtn) {
+			retryBtn.onclick = () => {
+				const widget = document.getElementById('weather-widget');
+				const loading = widget?.querySelector('.weather-loading');
+				const error = widget?.querySelector('.weather-error');
+				
+				// 显示加载状态
+				loading?.classList.remove('hidden');
+				error?.classList.add('hidden');
+				
+				// 清除定位缓存，重新获取
+				(window as any).__cachedLocation = null;
+				initWeather();
+			};
+		}
+	}
+
+	// 延迟加载天气，等待访客地图完成定位后再获取天气
+	setTimeout(() => {
+		initWeather();
+		bindRetryButton();
+	}, 3000); // 3秒后开始，给访客地图1.5秒的定位时间
 
 	// Swup 支持
 	document.addEventListener('astro:page-load', () => {
-		setTimeout(initWeather, 2000);
+		setTimeout(() => {
+			initWeather();
+			bindRetryButton();
+		}, 3000);
 	});
 </script>
