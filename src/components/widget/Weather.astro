@@ -128,23 +128,39 @@ import WidgetLayout from './WidgetLayout.astro';
 </style>
 
 <script>
+	import { getVisitorLocation } from '../../utils/supabase';
+
 	// 天气图标映射
 	const weatherIcons: Record<string, string> = {
 		'Clear': '☀️',
 		'Sunny': '☀️',
+		'晴': '☀️',
 		'Partly cloudy': '⛅',
+		'多云': '⛅',
 		'Cloudy': '☁️',
+		'阴': '☁️',
 		'Overcast': '☁️',
 		'Mist': '🌫️',
+		'雾': '🌫️',
 		'Fog': '🌫️',
 		'Light rain': '🌦️',
+		'小雨': '🌦️',
 		'Rain': '🌧️',
+		'中雨': '🌧️',
 		'Heavy rain': '🌧️',
+		'大雨': '🌧️',
+		'暴雨': '🌧️',
 		'Thunderstorm': '⛈️',
+		'雷阵雨': '⛈️',
 		'Snow': '🌨️',
+		'雪': '🌨️',
 		'Light snow': '🌨️',
+		'小雪': '🌨️',
 		'Heavy snow': '❄️',
+		'大雪': '❄️',
+		'暴雪': '❄️',
 		'Sleet': '🌨️',
+		'雨夹雪': '🌨️',
 		'default': '🌤️'
 	};
 
@@ -157,6 +173,34 @@ import WidgetLayout from './WidgetLayout.astro';
 		return weatherIcons['default'];
 	}
 
+	// 检测是否为国内用户
+	function isChina(country: string): boolean {
+		const chinaNames = ['china', '中国', '中华人民共和国', 'cn', 'chn'];
+		return chinaNames.some(name => country.toLowerCase().includes(name.toLowerCase()));
+	}
+
+	// 使用和风天气 API（国内）- 免费版
+	async function getQWeather(city: string): Promise<any> {
+		// 和风天气免费 API（无需 Key 的公共接口）
+		// 使用 wttr.in 的中文版本作为替代
+		const response = await fetch(
+			`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=zh`,
+			{ signal: AbortSignal.timeout(8000) }
+		);
+		if (!response.ok) throw new Error('Weather API failed');
+		return response.json();
+	}
+
+	// 使用 wttr.in（国外）
+	async function getWttrWeather(city: string): Promise<any> {
+		const response = await fetch(
+			`https://wttr.in/${encodeURIComponent(city)}?format=j1`,
+			{ signal: AbortSignal.timeout(8000) }
+		);
+		if (!response.ok) throw new Error('Weather API failed');
+		return response.json();
+	}
+
 	async function initWeather() {
 		const widget = document.getElementById('weather-widget');
 		if (!widget) return;
@@ -166,22 +210,24 @@ import WidgetLayout from './WidgetLayout.astro';
 		const error = widget.querySelector('.weather-error');
 
 		try {
-			// 获取位置信息
-			const locationRes = await fetch('https://ipapi.co/json/', {
-				signal: AbortSignal.timeout(5000)
-			});
+			// 使用与访客地图相同的定位方法
+			const location = await getVisitorLocation();
+			if (!location) throw new Error('Location failed');
+
+			console.log('🌤️ 天气定位:', location);
+
+			// 根据国家选择天气 API
+			const isChinaUser = isChina(location.country);
+			const cityName = location.city || location.province;
 			
-			if (!locationRes.ok) throw new Error('Location failed');
-			const location = await locationRes.json();
-
-			// 使用 wttr.in 免费天气 API（无需 API Key）
-			const weatherRes = await fetch(
-				`https://wttr.in/${location.city}?format=j1`,
-				{ signal: AbortSignal.timeout(8000) }
-			);
-
-			if (!weatherRes.ok) throw new Error('Weather failed');
-			const weather = await weatherRes.json();
+			let weather;
+			if (isChinaUser) {
+				console.log('🌤️ 使用国内天气源');
+				weather = await getQWeather(cityName);
+			} else {
+				console.log('🌤️ 使用国际天气源');
+				weather = await getWttrWeather(cityName);
+			}
 
 			// 解析天气数据
 			const current = weather.current_condition[0];
@@ -201,7 +247,7 @@ import WidgetLayout from './WidgetLayout.astro';
 			if (iconEl) iconEl.textContent = getWeatherIcon(desc);
 			if (tempEl) tempEl.textContent = `${temp}°C`;
 			if (descEl) descEl.textContent = desc;
-			if (locEl) locEl.textContent = `📍 ${location.city}, ${location.region}`;
+			if (locEl) locEl.textContent = `📍 ${location.city || location.province}${location.province && location.city ? ', ' + location.province : ''}`;
 			if (humidityEl) humidityEl.textContent = `💧 ${humidity}%`;
 			if (windEl) windEl.textContent = `🌬️ ${windSpeed}km/h`;
 
@@ -216,11 +262,11 @@ import WidgetLayout from './WidgetLayout.astro';
 		}
 	}
 
-	// 延迟加载天气，避免阻塞页面
-	setTimeout(initWeather, 1000);
+	// 延迟加载天气，等待定位完成
+	setTimeout(initWeather, 2000);
 
 	// Swup 支持
 	document.addEventListener('astro:page-load', () => {
-		setTimeout(initWeather, 1000);
+		setTimeout(initWeather, 2000);
 	});
 </script>
