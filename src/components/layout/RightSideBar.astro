@@ -8,6 +8,9 @@ import Profile from "@/components/widget/Profile.astro";
 import SiteStats from "@/components/widget/SiteStats.astro";
 import Tags from "@/components/widget/Tags.astro";
 import TOC from "@/components/widget/TOC.astro";
+import RandomPost from "@/components/RandomPost.astro";
+import Weather from "@/components/widget/Weather.astro";
+import VisitorMap from "@/components/widget/VisitorMap.astro";
 import { widgetManager } from "@/utils/widget-manager";
 
 interface Props {
@@ -34,6 +37,9 @@ const componentMap = {
 	"music-player": MusicPlayer,
 	"site-stats": SiteStats,
 	calendar: Calendar,
+	"random-post": RandomPost,
+	weather: Weather,
+	"visitor-map": VisitorMap,
 };
 
 // 渲染组件的辅助函数
