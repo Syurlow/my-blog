@@ -1,7 +1,7 @@
 ---
 /**
  * 访客足迹地图组件
- * 显示访客来自哪些省份（中国地图热力图）
+ * 使用 Leaflet 地图显示访客来自哪些省份
  */
 ---
 
@@ -12,7 +12,11 @@
 	</div>
 	
 	<div class="map-container">
-		<div id="china-map" class="china-map-grid"></div>
+		<div id="visitor-leaflet-map" class="visitor-leaflet-map"></div>
+		<!-- 地图源切换按钮 -->
+		<button id="visitor-map-toggle" class="visitor-map-toggle" title="切换地图源">
+			<span class="toggle-text">高德</span>
+		</button>
 	</div>
 	
 	<div id="visitor-provinces" class="visitor-provinces">
@@ -24,6 +28,9 @@
 		<span id="location-method" class="location-method"></span>
 	</div>
 </div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <style>
 	.visitor-map-widget {
@@ -49,73 +56,94 @@
 	}
 
 	.map-container {
+		position: relative;
 		width: 100%;
-		padding: 8px;
-		background: var(--card-bg);
 		border-radius: 8px;
+		overflow: hidden;
 		margin-bottom: 12px;
 	}
 
-	.china-map-grid {
-		display: grid;
-		grid-template-columns: repeat(7, 1fr);
-		gap: 3px;
+	.visitor-leaflet-map {
+		width: 100%;
+		height: 180px;
+		border-radius: 8px;
+		z-index: 1;
 	}
 
-	:global(.province-cell) {
-		aspect-ratio: 1;
-		border-radius: 4px;
-		background: rgba(200, 200, 200, 0.3);
+	/* 隐藏 Leaflet 控件使界面更简洁 */
+	:global(.visitor-leaflet-map .leaflet-control-attribution) {
+		font-size: 8px;
+		background: rgba(255,255,255,0.7) !important;
+	}
+
+	:global(.visitor-leaflet-map .leaflet-control-zoom) {
+		display: none;
+	}
+
+	/* 地图源切换按钮 */
+	.visitor-map-toggle {
+		position: absolute;
+		bottom: 8px;
+		right: 8px;
+		z-index: 1000;
 		display: flex;
 		align-items: center;
-		justify-content: center;
-		font-size: 0.5rem;
-		color: var(--text-muted);
-		transition: all 0.3s ease;
-		cursor: default;
-		position: relative;
+		gap: 4px;
+		padding: 4px 8px;
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		border: none;
+		border-radius: 6px;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: 11px;
+		font-weight: 500;
+		color: #333;
 	}
 
-	:global(.province-cell.visited) {
-		background: oklch(0.75 0.12 200);
-		color: white;
+	:global(.dark) .visitor-map-toggle {
+		background: rgba(40, 40, 40, 0.9);
+		color: #fff;
 	}
 
-	:global(.province-cell.current) {
-		background: oklch(0.65 0.15 200);
-		color: white;
-		box-shadow: 0 0 8px oklch(0.7 0.15 200 / 0.5);
-		animation: pulse-cell 2s infinite;
-	}
-
-	:global(.province-cell:hover) {
+	.visitor-map-toggle:hover {
 		transform: scale(1.05);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 	}
 
-	:global(.province-cell .province-name) {
-		font-size: 0.55rem;
+	/* 省份标记样式 */
+	:global(.province-marker) {
+		background: transparent !important;
+		border: none !important;
+	}
+
+	:global(.province-marker-inner) {
+		min-width: 24px;
+		padding: 2px 6px;
+		background: oklch(0.55 0.15 200);
+		color: white;
+		font-size: 10px;
+		font-weight: 600;
+		border-radius: 10px;
 		text-align: center;
-		line-height: 1.1;
-		word-break: break-all;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+		white-space: nowrap;
 	}
 
-	:global(.province-cell .visit-count) {
-		position: absolute;
-		top: 2px;
-		right: 2px;
-		font-size: 0.45rem;
-		background: rgba(0,0,0,0.3);
-		padding: 1px 3px;
-		border-radius: 3px;
+	:global(.province-marker-inner.current) {
+		background: oklch(0.5 0.18 200);
+		animation: pulse-marker 2s infinite;
 	}
 
-	@keyframes pulse-cell {
-		0%, 100% { opacity: 1; }
-		50% { opacity: 0.7; }
+	@keyframes pulse-marker {
+		0%, 100% { transform: scale(1); }
+		50% { transform: scale(1.1); }
 	}
 
 	.visitor-provinces {
-		max-height: 80px;
+		max-height: 60px;
 		overflow-y: auto;
 		margin-bottom: 8px;
 	}
@@ -178,14 +206,87 @@
 <script>
 	import { supabase, getVisitorLocation } from '../../utils/supabase';
 
-	// 中国省份列表（按地理位置排序，方便网格显示）
-	const provinces = [
-		'新疆', '内蒙古', '黑龙江', '吉林', '辽宁', '北京', '天津',
-		'西藏', '青海', '甘肃', '宁夏', '山西', '河北', '山东',
-		'四川', '陕西', '河南', '安徽', '江苏', '上海', '',
-		'云南', '重庆', '湖北', '湖南', '江西', '浙江', '台湾',
-		'贵州', '广西', '广东', '福建', '海南', '香港', '澳门',
-	];
+	// 省份中心坐标（WGS-84坐标系，通用基准）
+	// 高德地图需要转换为 GCJ-02，OSM 直接使用
+	const provinceCoords: Record<string, [number, number]> = {
+		// WGS-84 坐标
+		'北京': [39.9042, 116.4074],
+		'天津': [39.1252, 117.1909],
+		'河北': [38.0455, 114.5024],
+		'山西': [37.8706, 112.5489],
+		'内蒙古': [40.8183, 111.7652],
+		'辽宁': [41.8057, 123.4315],
+		'吉林': [43.8868, 125.3245],
+		'黑龙江': [45.7576, 126.6424],
+		'上海': [31.2304, 121.4737],
+		'江苏': [32.0603, 118.7969],
+		'浙江': [30.2741, 120.1551],
+		'安徽': [31.8612, 117.2830],
+		'福建': [26.0745, 119.2965],
+		'江西': [28.6820, 115.8579],
+		'山东': [36.6683, 116.9972],
+		'河南': [34.7657, 113.7536],
+		'湖北': [30.5844, 114.2986],
+		'湖南': [28.2278, 112.9388],
+		'广东': [23.1317, 113.2663],
+		'广西': [22.8155, 108.3275],
+		'海南': [20.0200, 110.3486],
+		'重庆': [29.5630, 106.5516],
+		'四川': [30.6599, 104.0657],
+		'贵州': [26.5982, 106.7073],
+		'云南': [25.0453, 102.7097],
+		'西藏': [29.6500, 91.1409],
+		'陕西': [34.2658, 108.9541],
+		'甘肃': [36.0594, 103.8260],
+		'青海': [36.6232, 101.7804],
+		'宁夏': [38.4717, 106.2587],
+		'新疆': [43.7931, 87.6271],
+		'香港': [22.3193, 114.1694],
+		'澳门': [22.1987, 113.5439],
+		'台湾': [25.0330, 121.5654],
+	};
+
+	// WGS-84 转 GCJ-02 坐标转换（用于高德地图）
+	function wgs84ToGcj02(lng: number, lat: number): [number, number] {
+		const PI = Math.PI;
+		const a = 6378245.0;
+		const ee = 0.00669342162296594323;
+
+		function outOfChina(lng: number, lat: number): boolean {
+			return lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+		}
+
+		function transformLat(x: number, y: number): number {
+			let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+			ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+			ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+			ret += (160.0 * Math.sin(y / 12.0 * PI) + 320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+			return ret;
+		}
+
+		function transformLng(x: number, y: number): number {
+			let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+			ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+			ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+			ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+			return ret;
+		}
+
+		if (outOfChina(lng, lat)) {
+			return [lng, lat];
+		}
+
+		let dLat = transformLat(lng - 105.0, lat - 35.0);
+		let dLng = transformLng(lng - 105.0, lat - 35.0);
+		const radLat = lat / 180.0 * PI;
+		let magic = Math.sin(radLat);
+		magic = 1 - ee * magic * magic;
+		const sqrtMagic = Math.sqrt(magic);
+		dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * PI);
+		dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * PI);
+		
+		return [lng + dLng, lat + dLat];
+	}
 
 	interface VisitorStats {
 		province: string;
@@ -193,69 +294,173 @@
 	}
 
 	class VisitorMapManager {
-		private mapContainer: HTMLElement | null;
+		private map: any = null;
+		private L: any = null;
+		private currentTileLayer: any = null;
+		private currentMapSource: 'amap' | 'osm' = 'amap';
+		private provinceMarkers: any[] = [];
 		private currentProvince: string | null = null;
 		private visitedProvinces: Map<string, number> = new Map();
 
 		constructor() {
-			this.mapContainer = document.getElementById('china-map');
 			this.init();
 		}
 
 		private async init() {
-			// 先渲染空白地图，确保UI显示
-			this.renderMap();
+			// 先加载地图
+			await this.loadLeaflet();
 			
 			// 然后异步加载数据
 			try {
 				await this.recordVisitor();
 				await this.loadStats();
-				// 数据加载完成后重新渲染以更新颜色
-				this.renderMap();
+				// 数据加载完成后添加标记
+				this.renderProvinceMarkers();
 			} catch (err) {
 				console.warn('访客数据加载失败:', err);
 			}
 		}
 
-		private renderMap() {
-			if (!this.mapContainer) return;
-
-			this.mapContainer.innerHTML = '';
-			
-			for (const province of provinces) {
-				const cell = document.createElement('div');
-				cell.className = 'province-cell';
-				
-				if (!province) {
-					// 空白格子
-					cell.style.visibility = 'hidden';
-				} else {
-					cell.setAttribute('data-province', province);
-					cell.setAttribute('title', province);
-					
-					// 省份名称（取前2个字）
-					const nameSpan = document.createElement('span');
-					nameSpan.className = 'province-name';
-					nameSpan.textContent = province.slice(0, 2);
-					cell.appendChild(nameSpan);
-					
-					// 检查是否有访客
-					const count = this.visitedProvinces.get(province) || 0;
-					if (count > 0) {
-						cell.classList.add('visited');
-						const countSpan = document.createElement('span');
-						countSpan.className = 'visit-count';
-						countSpan.textContent = String(count);
-						cell.appendChild(countSpan);
-					}
-					
-					// 检查是否是当前访客的省份
-					if (province === this.currentProvince) {
-						cell.classList.add('current');
-					}
+		private async loadLeaflet() {
+			return new Promise<void>((resolve) => {
+				if ((window as any).L) {
+					this.L = (window as any).L;
+					this.initMap();
+					resolve();
+					return;
 				}
-				
-				this.mapContainer.appendChild(cell);
+
+				const script = document.createElement('script');
+				script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+				script.onload = () => {
+					this.L = (window as any).L;
+					this.initMap();
+					resolve();
+				};
+				document.head.appendChild(script);
+			});
+		}
+
+		private initMap() {
+			const container = document.getElementById('visitor-leaflet-map');
+			if (!container || (container as any)._leaflet_id) return;
+
+			// 中国中心
+			this.map = this.L.map('visitor-leaflet-map', {
+				zoomControl: false,
+				attributionControl: true,
+				dragging: true,
+				scrollWheelZoom: false,
+			}).setView([35.0, 105.0], 3);
+
+			// 检查保存的偏好或默认使用高德
+			const savedSource = localStorage.getItem('preferred-map-source') as 'amap' | 'osm' | null;
+			this.switchMapSource(savedSource || 'amap');
+
+			// 绑定切换按钮
+			const toggleBtn = document.getElementById('visitor-map-toggle');
+			if (toggleBtn) {
+				toggleBtn.addEventListener('click', () => {
+					const newSource = this.currentMapSource === 'amap' ? 'osm' : 'amap';
+					this.switchMapSource(newSource);
+				});
+			}
+		}
+
+		private switchMapSource(source: 'amap' | 'osm') {
+			if (!this.map) return;
+
+			if (this.currentTileLayer) {
+				this.map.removeLayer(this.currentTileLayer);
+			}
+
+			const sources = {
+				amap: {
+					url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+					options: { subdomains: ['1', '2', '3', '4'], maxZoom: 18 },
+					name: '高德'
+				},
+				osm: {
+					url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+					options: { subdomains: ['a', 'b', 'c'], maxZoom: 19 },
+					name: 'OSM'
+				}
+			};
+
+			const config = sources[source];
+			this.currentTileLayer = this.L.tileLayer(config.url, config.options).addTo(this.map);
+			this.currentMapSource = source;
+
+			// 更新按钮
+			const toggleBtn = document.getElementById('visitor-map-toggle');
+			if (toggleBtn) {
+				const textSpan = toggleBtn.querySelector('.toggle-text');
+				if (textSpan) textSpan.textContent = config.name;
+			}
+
+			// 保存偏好
+			localStorage.setItem('preferred-map-source', source);
+
+			// 切换地图源后重新渲染标记（使用正确的坐标系）
+			this.renderProvinceMarkers();
+		}
+
+		// 根据当前地图源获取正确的坐标
+		private getCoords(province: string): [number, number] | null {
+			const wgsCoords = provinceCoords[province];
+			if (!wgsCoords) return null;
+
+			if (this.currentMapSource === 'amap') {
+				// 高德需要 GCJ-02 坐标
+				const [gcjLng, gcjLat] = wgs84ToGcj02(wgsCoords[1], wgsCoords[0]);
+				return [gcjLat, gcjLng];
+			} else {
+				// OSM 使用 WGS-84
+				return wgsCoords;
+			}
+		}
+
+		private renderProvinceMarkers() {
+			if (!this.map || !this.L) return;
+
+			// 清除旧标记
+			this.provinceMarkers.forEach(m => this.map.removeLayer(m));
+			this.provinceMarkers = [];
+
+			// 添加有访客的省份标记
+			this.visitedProvinces.forEach((count, province) => {
+				const coords = this.getCoords(province);
+				if (!coords) return;
+
+				const isCurrent = province === this.currentProvince;
+				const icon = this.L.divIcon({
+					className: 'province-marker',
+					html: `<div class="province-marker-inner ${isCurrent ? 'current' : ''}">${province.slice(0, 2)} ${count}</div>`,
+					iconSize: [50, 20],
+					iconAnchor: [25, 10]
+				});
+
+				const marker = this.L.marker(coords, { icon });
+				marker.bindPopup(`<b>${province}</b><br/>访客: ${count} 人`);
+				marker.addTo(this.map);
+				this.provinceMarkers.push(marker);
+			});
+
+			// 如果当前省份没有在统计中，单独添加
+			if (this.currentProvince && !this.visitedProvinces.has(this.currentProvince)) {
+				const coords = this.getCoords(this.currentProvince);
+				if (coords) {
+					const icon = this.L.divIcon({
+						className: 'province-marker',
+						html: `<div class="province-marker-inner current">${this.currentProvince.slice(0, 2)} 1</div>`,
+						iconSize: [50, 20],
+						iconAnchor: [25, 10]
+					});
+					const marker = this.L.marker(coords, { icon });
+					marker.bindPopup(`<b>${this.currentProvince}</b><br/>你在这里!`);
+					marker.addTo(this.map);
+					this.provinceMarkers.push(marker);
+				}
 			}
 		}
 
@@ -274,7 +479,6 @@
 					locEl.textContent = `📍 你来自 ${location.province}${location.city ? ' · ' + location.city : ''}`;
 				}
 				
-				// 显示定位方式
 				if (methodEl && location.method) {
 					if (location.method === 'gps') {
 						methodEl.textContent = '🛰️ GPS定位';
@@ -284,8 +488,6 @@
 						methodEl.className = 'location-method ip';
 					}
 				}
-
-				
 
 				// 记录到 Supabase
 				const visitorId = this.getVisitorId();
@@ -331,20 +533,17 @@
 		}
 
 		private renderStats(stats: VisitorStats[]) {
-			// 保存访客统计数据
 			stats.forEach(stat => {
 				this.visitedProvinces.set(stat.province, stat.count);
 			});
 
-			// 更新总访客数
 			const totalCount = stats.reduce((sum, s) => sum + s.count, 0);
 			const countEl = document.getElementById('visitor-count');
 			if (countEl) countEl.textContent = `${totalCount} 位访客`;
 
-			// 渲染省份列表
 			const container = document.getElementById('visitor-provinces');
 			if (container) {
-				const sortedStats = stats.sort((a, b) => b.count - a.count).slice(0, 8);
+				const sortedStats = stats.sort((a, b) => b.count - a.count).slice(0, 6);
 				container.innerHTML = `
 					<div class="province-list">
 						${sortedStats.map(s => `
@@ -361,17 +560,18 @@
 	// 初始化
 	function initVisitorMap() {
 		const widget = document.getElementById('visitor-map-widget');
-		if (!widget) return;
+		if (!widget || (widget as any)._initialized) return;
+		(widget as any)._initialized = true;
 		new VisitorMapManager();
 	}
 
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', initVisitorMap);
 	} else {
-		setTimeout(initVisitorMap, 1500);
+		setTimeout(initVisitorMap, 1000);
 	}
 
 	document.addEventListener('astro:page-load', () => {
-		setTimeout(initVisitorMap, 1500);
+		setTimeout(initVisitorMap, 1000);
 	});
 </script>

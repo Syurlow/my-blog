@@ -54,8 +54,8 @@ export const mapPhotos: MapPhoto[] = [
     title: "你是笨蛋！",
     description: "没错！说的就是你！！！",
     imageUrl: "/my-blog/assets/images/baka.jpg",
-    lat: 30.513135,
-    lng: 114.431140,
+    lat: 30.515115,
+    lng: 114.425225,
   },
   {
     id: "7",

@@ -37,7 +37,15 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
 </div>
 
 <!-- 地图容器 -->
-<div id="map-album" style="width: 100%; height: 600px; border-radius: 12px; z-index: 1;"></div>
+<div class="map-album-wrapper">
+  <div id="map-album" style="width: 100%; height: 600px; border-radius: 12px; z-index: 1;"></div>
+
+  <!-- 地图源切换按钮 -->
+  <button id="map-source-toggle" class="map-source-toggle" title="切换地图源">
+    <span class="toggle-icon">🗺️</span>
+    <span class="toggle-text">高德</span>
+  </button>
+</div>
 
 <!-- 航班信息弹窗 -->
 <div id="flight-info-panel" class="flight-info-panel hidden">
@@ -128,14 +136,22 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     return [lng + dLng, lat + dLat];
   }
 
-    // 全局变量
+                // 全局变量
   let map: any = null;
+  let L: any = null;
   let photoMarkers: any[] = [];
   let flightLayers: any[] = [];
   let showPhotos = true;
   let showFlights = true;
   let trainLayers: any[] = [];
   let showTrains = true;
+  let currentTileLayer: any = null;
+  let currentMapSource: 'amap' | 'osm' = 'amap'; // 默认高德
+  
+  // 保存原始数据用于重新渲染
+  let photosData: Photo[] = [];
+  let flightsData: Flight[] = [];
+  let trainsData: Train[] = [];
 
   interface Photo {
     title: string;
@@ -232,7 +248,7 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.onload = () => {
-      const L = (window as any).L;
+      L = (window as any).L;
       
       // 中心点
       let center: [number, number] = [35.0, 105.0];
@@ -243,9 +259,91 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
         
       map = L.map('map-album').setView(center, 5);
 
-      // 根据用户位置选择地图瓦片
-      // 检测是否在中国（通过尝试加载高德地图或使用IP检测）
+            // 地图源配置
+      const mapSources = {
+        amap: {
+          url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+          options: {
+            subdomains: ['1', '2', '3', '4'],
+            attribution: '&copy; 高德地图',
+            maxZoom: 18
+          },
+          name: '高德'
+        },
+        osm: {
+          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          options: {
+            subdomains: ['a', 'b', 'c'],
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxZoom: 19
+          },
+          name: 'OSM'
+        }
+      };
+
+      // 根据当前地图源转换坐标
+      function convertCoords(lng: number, lat: number): [number, number] {
+        if (currentMapSource === 'amap') {
+          // 高德需要 GCJ-02
+          const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
+          return [gcjLat, gcjLng];
+        } else {
+          // OSM 使用 WGS-84
+          return [lat, lng];
+        }
+      }
+
+      // 切换地图源
+      function switchMapSource(source: 'amap' | 'osm') {
+        if (currentTileLayer) {
+          map.removeLayer(currentTileLayer);
+        }
+        
+        const config = mapSources[source];
+        currentTileLayer = L.tileLayer(config.url, config.options).addTo(map);
+        currentMapSource = source;
+        
+        // 更新按钮文字
+        const toggleBtn = document.getElementById('map-source-toggle');
+        if (toggleBtn) {
+          const textSpan = toggleBtn.querySelector('.toggle-text');
+          if (textSpan) textSpan.textContent = config.name;
+        }
+        
+        // 保存用户偏好
+        localStorage.setItem('preferred-map-source', source);
+        console.log(`🗺️ 切换到 ${config.name} 地图`);
+        
+        // 重新渲染所有标记（使用正确的坐标系）
+        rerenderAllMarkers();
+      }
+
+      // 重新渲染所有标记
+      function rerenderAllMarkers() {
+        // 清除现有标记
+        photoMarkers.forEach(m => map.removeLayer(m));
+        flightLayers.forEach(l => map.removeLayer(l));
+        trainLayers.forEach(l => map.removeLayer(l));
+        photoMarkers = [];
+        flightLayers = [];
+        trainLayers = [];
+        
+        // 重新添加
+        if (photosData.length > 0) renderPhotos(photosData);
+        if (flightsData.length > 0) renderFlights(flightsData, L);
+        if (trainsData.length > 0) renderTrains(trainsData, L);
+      }
+
+      // 根据用户位置或偏好选择地图瓦片
       async function detectLocationAndSetTileLayer() {
+        // 先检查用户是否有保存的偏好
+        const savedSource = localStorage.getItem('preferred-map-source') as 'amap' | 'osm' | null;
+        if (savedSource && (savedSource === 'amap' || savedSource === 'osm')) {
+          console.log(`🗺️ 使用保存的偏好: ${savedSource}`);
+          switchMapSource(savedSource);
+          return;
+        }
+
         let isInChina = true; // 默认假设在中国
         
         try {
@@ -281,83 +379,39 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
           }
         }
         
-        if (isInChina) {
-          // 国内用户：使用高德地图
-          console.log('🗺️ 使用高德地图');
-          L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-            subdomains: ['1', '2', '3', '4'],
-            attribution: '&copy; 高德地图',
-            maxZoom: 18
-          }).addTo(map);
-        } else {
-          // 国外用户：使用 OpenStreetMap
-          console.log('🗺️ 使用 OpenStreetMap');
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            subdomains: ['a', 'b', 'c'],
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-          }).addTo(map);
-        }
+        // 根据检测结果设置地图源
+        switchMapSource(isInChina ? 'amap' : 'osm');
       }
       
       detectLocationAndSetTileLayer();
 
-      // 自定义照片标记图标
-      const photoIcon = L.divIcon({
-        className: 'photo-marker',
-        html: '<div class="photo-marker-inner">📷</div>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32]
-      });
+      // 绑定切换按钮事件
+      const toggleBtn = document.getElementById('map-source-toggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          const newSource = currentMapSource === 'amap' ? 'osm' : 'amap';
+          switchMapSource(newSource);
+        });
+      }
 
-      // 添加照片标记
-      photos.forEach(photo => {
-        const [gcjLng, gcjLat] = wgs84ToGcj02(photo.lng, photo.lat);
-        
-        const marker = L.marker([gcjLat, gcjLng], { icon: photoIcon });
-        
-        // 处理多图片或单图片
-        const images = photo.images || (photo.imageUrl ? [photo.imageUrl] : []);
-        const imageCount = images.length;
-        const uniqueId = 'photo-' + Math.random().toString(36).substring(2, 10);
-        
-        let imageHTML = '';
-        if (imageCount === 1) {
-          imageHTML = `<img src="${images[0]}" alt="${photo.title}" class="photo-single-img">`;
-        } else if (imageCount > 1) {
-          imageHTML = `
-            <div class="photo-slider" id="${uniqueId}">
-              <div class="slider-container">${images.map((img: string, idx: number) => `<img src="${img}" class="slider-img ${idx === 0 ? 'active' : ''}" data-index="${idx}">`).join('')}</div>
-              <div class="slider-dots">${images.map((_: string, idx: number) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}</div>
-            </div>`;
-        }
-        
-        const popupContent = `
-          <div class="map-photo-popup">
-            <h3 class="photo-title">${photo.title}</h3>
-            ${imageHTML}
-            ${photo.description ? `<p class="photo-desc">${photo.description}</p>` : ''}
-          </div>
-        `;
-        
-        marker.bindPopup(popupContent, { className: 'map-photo-popup-container', maxWidth: 280 });
-        photoMarkers.push(marker);
-        if (showPhotos) marker.addTo(map);
-      });
+      // 保存照片数据并渲染
+      photosData = photos;
+      renderPhotos(photos);
 
                   // 绑定控制事件
       setupControls();
 
       // 动态加载完整航班数据
       loadFlightData().then(flights => {
+        flightsData = flights;
         renderFlights(flights, L);
       }).catch(err => {
         console.error('Failed to load flight data:', err);
       });
 
-      // 加载和渲染灮超数据
+      // 加载和渲染火车数据
       loadTrainData().then(trains => {
+        trainsData = trains;
         renderTrains(trains, L);
       }).catch(err => {
         console.error('Failed to load train data:', err);
@@ -391,15 +445,65 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     }
   }
 
-  // 渲染灮超数据
+  // 渲染照片标记
+  function renderPhotos(photos: Photo[]) {
+    const photoIcon = L.divIcon({
+      className: 'photo-marker',
+      html: '<div class="photo-marker-inner">📷</div>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
+
+    photos.forEach(photo => {
+      const coords = currentMapSource === 'amap' 
+        ? (() => { const [gcjLng, gcjLat] = wgs84ToGcj02(photo.lng, photo.lat); return [gcjLat, gcjLng]; })()
+        : [photo.lat, photo.lng];
+      
+      const marker = L.marker(coords, { icon: photoIcon });
+      
+      const images = photo.images || (photo.imageUrl ? [photo.imageUrl] : []);
+      const imageCount = images.length;
+      const uniqueId = 'photo-' + Math.random().toString(36).substring(2, 10);
+      
+      let imageHTML = '';
+      if (imageCount === 1) {
+        imageHTML = `<img src="${images[0]}" alt="${photo.title}" class="photo-single-img">`;
+      } else if (imageCount > 1) {
+        imageHTML = `
+          <div class="photo-slider" id="${uniqueId}">
+            <div class="slider-container">${images.map((img: string, idx: number) => `<img src="${img}" class="slider-img ${idx === 0 ? 'active' : ''}" data-index="${idx}">`).join('')}</div>
+            <div class="slider-dots">${images.map((_: string, idx: number) => `<span class="dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></span>`).join('')}</div>
+          </div>`;
+      }
+      
+      const popupContent = `
+        <div class="map-photo-popup">
+          <h3 class="photo-title">${photo.title}</h3>
+          ${imageHTML}
+          ${photo.description ? `<p class="photo-desc">${photo.description}</p>` : ''}
+        </div>
+      `;
+      
+      marker.bindPopup(popupContent, { className: 'map-photo-popup-container', maxWidth: 280 });
+      photoMarkers.push(marker);
+      if (showPhotos) marker.addTo(map);
+    });
+  }
+
+  // 渲染航班数据
   function renderFlights(flights: Flight[], L: any) {
     flights.forEach(flight => {
       if (!flight.points || flight.points.length < 2) return;
         
-        // 转换所有轨迹点坐标
+        // 根据地图源转换坐标
         const latLngs = flight.points.map(p => {
-          const [gcjLng, gcjLat] = wgs84ToGcj02(p.lng, p.lat);
-          return [gcjLat, gcjLng];
+          if (currentMapSource === 'amap') {
+            const [gcjLng, gcjLat] = wgs84ToGcj02(p.lng, p.lat);
+            return [gcjLat, gcjLng];
+          } else {
+            return [p.lat, p.lng];
+          }
         });
         
         const airlineInfo = getAirlineInfo(flight.flightNumber);
@@ -500,10 +604,14 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     trains.forEach(train => {
       if (!train.route || train.route.length < 2) return;
       
-      // 转换坐标 - trains data format is [lng, lat]
+      // 根据地图源转换坐标 - trains data format is [lng, lat]
       const latLngs = train.route.map(p => {
-        const [gcjLng, gcjLat] = wgs84ToGcj02(p[0], p[1]);
-        return [gcjLat, gcjLng];
+        if (currentMapSource === 'amap') {
+          const [gcjLng, gcjLat] = wgs84ToGcj02(p[0], p[1]);
+          return [gcjLat, gcjLng];
+        } else {
+          return [p[1], p[0]];
+        }
       });
       
       const color = getTrainColor(train.trainNumber);
@@ -542,7 +650,9 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
       const stationMarkers: any[] = [];
       if (train.stations) {
         train.stations.forEach((station, idx) => {
-          const [gcjLng, gcjLat] = wgs84ToGcj02(station.lng, station.lat);
+          const coords = currentMapSource === 'amap'
+            ? (() => { const [gcjLng, gcjLat] = wgs84ToGcj02(station.lng, station.lat); return [gcjLat, gcjLng]; })()
+            : [station.lat, station.lng];
           const isEndpoint = idx === 0 || idx === train.stations.length - 1;
           
           const icon = L.divIcon({
@@ -552,7 +662,7 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
             iconAnchor: [isEndpoint ? 6 : 4, isEndpoint ? 6 : 4]
           });
           
-          const marker = L.marker([gcjLat, gcjLng], { icon });
+          const marker = L.marker(coords, { icon });
           marker.bindPopup(`<b>${station.name}</b>`);
           stationMarkers.push(marker);
         });
@@ -613,6 +723,10 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
 </script>
 
 <style>
+    .map-album-wrapper {
+    position: relative;
+  }
+
   #map-album {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
@@ -876,6 +990,51 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
   }
 
   /* 响应式 */
+    /* 地图源切换按钮 */
+  .map-source-toggle {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  :global(.dark) .map-source-toggle {
+    background: rgba(40, 40, 40, 0.95);
+    color: #fff;
+  }
+
+  .map-source-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .map-source-toggle:active {
+    transform: translateY(0);
+  }
+
+  .toggle-icon {
+    font-size: 16px;
+  }
+
+  .toggle-text {
+    font-size: 13px;
+  }
+
   @media (max-width: 640px) {
     .map-controls {
       flex-direction: column;
@@ -890,6 +1049,12 @@ const trainsMetaJson = JSON.stringify(trainsMeta);
     .stats-info {
       width: 100%;
       justify-content: center;
+    }
+
+    .map-source-toggle {
+      bottom: 10px;
+      right: 10px;
+      padding: 8px 12px;
     }
   }
 
